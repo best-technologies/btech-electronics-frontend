@@ -1,35 +1,62 @@
 "use client";
 
+import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, ArrowRight } from "lucide-react";
 
 export function FinalCtaSection() {
   return (
     <section
       id="contact"
-      className="w-full py-16 lg:py-20 xl:py-24"
+      className="py-20 sm:py-24 lg:py-28"
       aria-labelledby="final-cta-heading"
     >
-      <div className="w-full max-w-[1200px] mx-auto px-6 sm:px-8 md:px-10 lg:px-12 xl:px-16 2xl:px-24">
-        <div className="rounded-2xl border border-border bg-muted/40 px-8 py-12 sm:px-12 sm:py-14 lg:px-16 lg:py-16 text-center">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <motion.div
+          className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-primary/5 via-muted/30 to-primary/5 px-8 py-16 text-center shadow-xl shadow-foreground/5 sm:px-12 sm:py-20 lg:px-20 lg:py-24"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, margin: "-80px" }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {/* Decorative elements */}
+          <div
+            className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-primary/10 blur-3xl"
+            aria-hidden
+          />
+          <div
+            className="absolute -bottom-20 -left-20 h-40 w-40 rounded-full bg-primary/10 blur-3xl"
+            aria-hidden
+          />
+
           <h2
             id="final-cta-heading"
-            className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground"
+            className="relative text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-[2.5rem]"
           >
             Ready to source in volume?
           </h2>
-          <p className="mt-4 text-muted-foreground text-base sm:text-lg max-w-xl mx-auto">
+          <p className="relative mt-4 max-w-xl mx-auto text-base text-muted-foreground sm:text-lg">
             Get our catalog, pricing, or a callback for your category and
             volume.
           </p>
-          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="text-base min-w-[200px]">
+          <motion.div
+            className="relative mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center"
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Button
+              size="lg"
+              className="h-12 min-w-[200px] rounded-lg px-6 text-base font-semibold shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
+            >
               Get in touch
+              <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
             </Button>
             <Button
               size="lg"
               variant="outline"
-              className="text-base min-w-[200px]"
+              className="h-12 min-w-[200px] rounded-lg border-2 px-6 text-base font-medium"
               asChild
             >
               <a
@@ -42,8 +69,8 @@ export function FinalCtaSection() {
                 WhatsApp
               </a>
             </Button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );

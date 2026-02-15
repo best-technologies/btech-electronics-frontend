@@ -9,15 +9,15 @@ import { FinalCtaSection } from "@/landing-page/sections/final-cta/FinalCtaSecti
 
 export default function Home() {
   return (
-    <main>
-        <HeroSection />
-        <TrustBarSection />
-        <CategoriesSection />
-        <WhoWeAreSection />
-        <WhyPartnerSection />
-        <HowItWorksSection />
-        <LocationSection />
-        <FinalCtaSection />
-      </main>
+    <main className="min-h-screen">
+      <HeroSection />
+      <TrustBarSection />
+      <CategoriesSection />
+      <WhoWeAreSection />
+      <WhyPartnerSection />
+      <HowItWorksSection />
+      <LocationSection />
+      <FinalCtaSection />
+    </main>
   );
 }

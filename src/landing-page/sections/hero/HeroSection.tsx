@@ -1,7 +1,9 @@
 "use client";
 
+import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
-import { ImagePlaceholder } from "@/landing-page/components/ImagePlaceholder";
+import { HeroCarousel } from "@/landing-page/components/HeroCarousel";
+import { ArrowRight, Package } from "lucide-react";
 
 function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -10,43 +12,78 @@ function scrollToId(id: string) {
 export function HeroSection() {
   return (
     <section
-      className="relative w-full min-h-[88vh] flex flex-col lg:flex-row lg:items-center py-16 lg:py-20 xl:py-24"
+      className="relative isolate overflow-hidden"
       aria-label="Hero"
     >
-      <div className="w-full max-w-[1440px] mx-auto flex flex-col lg:grid lg:grid-cols-[1.15fr_1fr] lg:gap-12 xl:gap-16 2xl:gap-20 items-center gap-10 px-6 sm:px-8 md:px-10 lg:px-12 xl:px-16 2xl:px-24">
-        <div className="flex flex-col justify-center space-y-6 lg:space-y-8 text-center lg:text-left min-w-0 w-full">
-          <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] xl:text-6xl 2xl:text-[3.5rem] font-semibold tracking-tight text-foreground leading-[1.08]">
-            Your distribution partner for electronics — from appliances to power
-            solutions.
-          </h1>
-          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 lg:max-w-none">
-            Hundreds of millions in inventory. TVs, freezers, inverters, solar
-            and lithium batteries, and more — for distributors, by a distributor.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-1">
-            <Button
-              size="lg"
-              className="text-base min-w-[180px]"
-              onClick={() => scrollToId("contact")}
+      {/* Subtle gradient background */}
+      <div
+        className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/5 via-transparent to-transparent"
+        aria-hidden
+      />
+
+      <div className="mx-auto max-w-7xl px-4 pt-16 pb-20 sm:px-6 sm:pt-24 sm:pb-28 lg:px-8 lg:pt-32 lg:pb-36">
+        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+          <motion.div
+            className="mx-auto max-w-2xl text-center lg:max-w-none lg:text-left"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <motion.div
+              className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-medium tracking-wide text-primary"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
             >
-              Request catalog
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="text-base min-w-[180px]"
-              onClick={() => scrollToId("categories")}
+              <Package className="h-3.5 w-3.5" aria-hidden />
+              Electronics distribution · Ibadan, Nigeria
+            </motion.div>
+
+            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl xl:text-[3.5rem]">
+              Your distribution partner for{" "}
+              <span className="text-primary">electronics</span> — from appliances
+              to power solutions.
+            </h1>
+
+            <p className="mt-6 text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              Hundreds of millions in inventory. TVs, freezers, inverters, solar
+              and lithium batteries, and more — for distributors, by a
+              distributor.
+            </p>
+
+            <motion.div
+              className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center lg:justify-start"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
             >
-              View product categories
-            </Button>
-          </div>
-        </div>
-        <div className="w-full min-w-0 flex items-center justify-center lg:justify-end">
-          <ImagePlaceholder
-            aspectRatio="video"
-            label="Hero image"
-            className="rounded-lg overflow-hidden min-h-[260px] sm:min-h-[300px] lg:min-h-[340px] w-full"
-          />
+              <Button
+                size="lg"
+                className="h-12 min-w-[180px] rounded-lg px-6 text-base font-semibold shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
+                onClick={() => scrollToId("contact")}
+              >
+                Request catalog
+                <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-12 min-w-[180px] rounded-lg border-2 px-6 text-base font-medium"
+                onClick={() => scrollToId("categories")}
+              >
+                View product categories
+              </Button>
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            className="relative mx-auto w-full max-w-xl lg:max-w-none"
+            initial={{ opacity: 0, scale: 0.98, x: 24 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
+            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <HeroCarousel />
+          </motion.div>
         </div>
       </div>
     </section>

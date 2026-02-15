@@ -15,8 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Electronics",
-  description: "Electronics app built with Next.js and shadcn/ui",
+  title: "Best Technologies | Electronics Distribution Partner",
+  description:
+    "Your trusted distribution partner for electronics in Ibadan, Nigeria. TVs, appliances, inverters, solar batteries & more. Serving wholesalers across Oyo and beyond.",
 };
 
 export default function RootLayout({
@@ -31,11 +32,11 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
-          <div className="min-h-screen flex flex-col bg-background">
+          <div className="flex min-h-screen flex-col bg-background text-foreground">
             <Header />
             <div className="flex-1 min-h-0 flex flex-col">
               {children}

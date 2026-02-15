@@ -1,9 +1,13 @@
+"use client";
+
+import { motion } from "motion/react";
 import {
   Package,
   Layers,
   MapPin,
   ShieldCheck,
 } from "lucide-react";
+import { AnimateOnScroll } from "@/landing-page/components/AnimateOnScroll";
 
 const DIFFERENTIATORS = [
   {
@@ -39,40 +43,62 @@ const DIFFERENTIATORS = [
 export function WhyPartnerSection() {
   return (
     <section
-      className="w-full py-16 lg:py-20 xl:py-24 bg-muted/30"
+      className="py-20 sm:py-24 lg:py-28"
       aria-labelledby="why-partner-heading"
     >
-      <div className="w-full max-w-[1200px] mx-auto px-6 sm:px-8 md:px-10 lg:px-12 xl:px-16 2xl:px-24">
-        <header className="text-center mb-12 lg:mb-14">
-          <p className="text-sm font-medium uppercase tracking-widest text-primary mb-3">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <AnimateOnScroll variant="fadeUp" as="header" className="mx-auto max-w-3xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-widest text-primary">
             Why choose us
           </p>
           <h2
             id="why-partner-heading"
-            className="text-3xl sm:text-4xl lg:text-[2.5rem] font-semibold tracking-tight text-foreground leading-tight"
+            className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
           >
             Why wholesalers choose Best Technologies
           </h2>
-          <div className="mt-6 w-16 h-0.5 bg-primary mx-auto rounded-full" aria-hidden />
-        </header>
+          <div
+            className="mx-auto mt-6 h-1 w-16 rounded-full bg-primary"
+            aria-hidden
+          />
+        </AnimateOnScroll>
 
-        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 list-none p-0 m-0">
+        <motion.ul
+          className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8 list-none p-0 m-0"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, margin: "-60px" }}
+          variants={{
+            visible: { transition: { staggerChildren: 0.1, delayChildren: 0.1 } },
+            hidden: {},
+          }}
+        >
           {DIFFERENTIATORS.map(({ id, icon: Icon, title, description }) => (
-            <li key={id}>
-              <div className="h-full rounded-xl border border-border bg-card p-6 lg:p-7 flex flex-col">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary mb-4">
-                  <Icon className="h-5 w-5" aria-hidden />
-                </div>
-                <h3 className="font-semibold text-foreground text-lg mb-2">
+            <motion.li
+              key={id}
+              variants={{
+                hidden: { opacity: 0, y: 32 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div className="group h-full rounded-2xl border border-border/60 bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-foreground/5 lg:p-8">
+                <motion.div
+                  className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary/15"
+                  whileHover={{ scale: 1.05, rotate: 3 }}
+                >
+                  <Icon className="h-6 w-6" aria-hidden />
+                </motion.div>
+                <h3 className="mb-2 text-lg font-semibold text-foreground">
                   {title}
                 </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed flex-1">
+                <p className="text-muted-foreground leading-relaxed">
                   {description}
                 </p>
               </div>
-            </li>
+            </motion.li>
           ))}
-        </ul>
+        </motion.ul>
       </div>
     </section>
   );

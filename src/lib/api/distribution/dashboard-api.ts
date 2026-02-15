@@ -193,7 +193,7 @@ export interface DashboardBulkOrderFull {
   documents: DashboardDocument[];
 }
 
-// --- Full dashboard response ---
+// --- Full dashboard response (frontend shape) ---
 
 export interface DashboardData {
   summary: DashboardSummary;
@@ -203,6 +203,253 @@ export interface DashboardData {
   recentBulkOrderDocuments: RecentDocument[];
   allConsignments: DashboardConsignmentFull[];
   allBulkOrders: DashboardBulkOrderFull[];
+}
+
+// --- Raw backend response (API returns this; we map to DashboardData) ---
+
+interface BackendAnalysisConsignments {
+  totalConsignments: number;
+  totalLineItems: number;
+  totalCartons: number;
+  totalQuantity: number;
+  totalCost: number;
+  totalPaid: number;
+  totalBalanceToPay: number;
+  byStatus: Record<string, number>;
+  bySupplier?: Array<{ supplierName: string; count: number; totalCost: number; totalQuantity: number }>;
+}
+
+interface BackendAnalysisBulkOrders {
+  totalBulkOrders: number;
+  totalRevenue: number;
+  totalPaid: number;
+  totalPending: number;
+  byStatus: Record<string, number>;
+  byPaymentStatus: Record<string, number>;
+}
+
+interface BackendAnalysisDocuments {
+  consignmentDocs: number;
+  bulkOrderDocs: number;
+  consignmentByType: Record<string, number>;
+  bulkOrderByType: Record<string, number>;
+}
+
+interface BackendAnalysis {
+  consignments: BackendAnalysisConsignments;
+  bulkOrders: BackendAnalysisBulkOrders;
+  documents: BackendAnalysisDocuments;
+}
+
+interface BackendConsignmentItem {
+  id: string;
+  referenceNumber: string;
+  supplierName: string;
+  status: string;
+  receivedAt: string | null;
+  itemCount: number;
+  totalQuantity: number;
+  totalValue: number;
+  documentCount: number;
+  createdAt?: string;
+  items?: unknown[];
+  documents?: unknown[];
+  receivedBy?: { id: string; first_name: string; last_name: string; email: string } | null;
+  warehouseLocation?: string | null;
+  notes?: string | null;
+}
+
+interface BackendBulkOrderItem {
+  id: string;
+  referenceNumber: string;
+  buyerName: string;
+  buyerCompany: string | null;
+  status: string;
+  totalAmount: number;
+  amountPaid: number;
+  paymentStatus: string | null;
+  invoiceNumber: string | null;
+  itemCount: number;
+  documentCount: number;
+  createdAt?: string;
+  items?: unknown[];
+  documents?: unknown[];
+}
+
+interface BackendDashboardResponse {
+  analysis: BackendAnalysis;
+  consignments: { items: BackendConsignmentItem[]; meta?: unknown };
+  bulkOrders: { items: BackendBulkOrderItem[]; meta?: unknown };
+  recentConsignmentDocuments: Array<{
+    id: string;
+    consignmentId?: string;
+    documentType: string;
+    secure_url: string;
+    public_id: string;
+    createdAt: string;
+  }>;
+  recentBulkOrderDocuments: Array<{
+    id: string;
+    bulkOrderId?: string;
+    documentType: string;
+    secure_url: string;
+    public_id: string;
+    createdAt: string;
+  }>;
+}
+
+function mapBackendToDashboard(raw: BackendDashboardResponse | null): DashboardData | null {
+  if (!raw) return null;
+
+  const a = raw.analysis;
+  const consignmentItems = raw.consignments?.items ?? [];
+  const bulkOrderItems = raw.bulkOrders?.items ?? [];
+  const recentConsignmentDocs = raw.recentConsignmentDocuments ?? [];
+  const recentBulkOrderDocs = raw.recentBulkOrderDocuments ?? [];
+
+  const summary: DashboardSummary = {
+    consignments: {
+      total: a?.consignments?.totalConsignments ?? 0,
+      byStatus: (a?.consignments?.byStatus as DashboardSummary["consignments"]["byStatus"]) ?? {
+        pending: 0,
+        received: 0,
+        inspected: 0,
+        available: 0,
+        partial_out: 0,
+        closed: 0,
+      },
+      totalItemsReceived: a?.consignments?.totalLineItems ?? 0,
+      totalValue: a?.consignments?.totalCost ?? 0,
+    },
+    bulkOrders: {
+      total: a?.bulkOrders?.totalBulkOrders ?? 0,
+      byStatus: (a?.bulkOrders?.byStatus as DashboardSummary["bulkOrders"]["byStatus"]) ?? {
+        pending: 0,
+        confirmed: 0,
+        packing: 0,
+        completed: 0,
+        cancelled: 0,
+      },
+      totalRevenue: a?.bulkOrders?.totalRevenue ?? 0,
+      totalPaid: a?.bulkOrders?.totalPaid ?? 0,
+      totalPending: a?.bulkOrders?.totalPending ?? 0,
+      byPaymentStatus: (a?.bulkOrders?.byPaymentStatus as DashboardSummary["bulkOrders"]["byPaymentStatus"]) ?? {
+        pending: 0,
+        partial: 0,
+        paid: 0,
+      },
+    },
+    documents: {
+      consignmentDocs: a?.documents?.consignmentDocs ?? 0,
+      bulkOrderDocs: a?.documents?.bulkOrderDocs ?? 0,
+      consignmentByType: (a?.documents?.consignmentByType as DashboardSummary["documents"]["consignmentByType"]) ?? {
+        invoice: 0,
+        packing_list: 0,
+      },
+      bulkOrderByType: (a?.documents?.bulkOrderByType as DashboardSummary["documents"]["bulkOrderByType"]) ?? {
+        invoice: 0,
+        delivery_note: 0,
+        receipt: 0,
+      },
+    },
+  };
+
+  const recentConsignments: RecentConsignment[] = consignmentItems.map((c) => ({
+    id: c.id,
+    referenceNumber: c.referenceNumber,
+    supplierName: c.supplierName,
+    status: c.status,
+    receivedAt: c.receivedAt ?? null,
+    itemCount: c.itemCount ?? 0,
+    totalQuantity: c.totalQuantity ?? 0,
+    totalValue: c.totalValue ?? 0,
+    documentCount: c.documentCount ?? 0,
+    createdAt: c.createdAt ?? new Date().toISOString(),
+  }));
+
+  const recentBulkOrders: RecentBulkOrder[] = bulkOrderItems.map((o) => ({
+    id: o.id,
+    referenceNumber: o.referenceNumber,
+    buyerName: o.buyerName,
+    buyerCompany: o.buyerCompany ?? null,
+    status: o.status,
+    totalAmount: o.totalAmount ?? 0,
+    amountPaid: o.amountPaid ?? 0,
+    paymentStatus: o.paymentStatus ?? null,
+    invoiceNumber: o.invoiceNumber ?? null,
+    itemCount: o.itemCount ?? 0,
+    documentCount: o.documentCount ?? 0,
+    createdAt: o.createdAt ?? new Date().toISOString(),
+  }));
+
+  const recentConsignmentDocuments: RecentDocument[] = recentConsignmentDocs.map((d) => ({
+    id: d.id,
+    consignmentId: d.consignmentId,
+    documentType: d.documentType,
+    secure_url: d.secure_url,
+    public_id: d.public_id,
+    createdAt: d.createdAt,
+  }));
+
+  const recentBulkOrderDocuments: RecentDocument[] = recentBulkOrderDocs.map((d) => ({
+    id: d.id,
+    bulkOrderId: d.bulkOrderId,
+    documentType: d.documentType,
+    secure_url: d.secure_url,
+    public_id: d.public_id,
+    createdAt: d.createdAt,
+  }));
+
+  const allConsignments: DashboardConsignmentFull[] = consignmentItems.map((c) => ({
+    id: c.id,
+    referenceNumber: c.referenceNumber,
+    supplierName: c.supplierName,
+    supplierReference: null,
+    receivedAt: c.receivedAt ?? null,
+    status: c.status,
+    warehouseLocation: c.warehouseLocation ?? null,
+    notes: c.notes ?? null,
+    receivedById: c.receivedBy?.id ?? null,
+    createdAt: c.createdAt ?? new Date().toISOString(),
+    updatedAt: c.createdAt ?? new Date().toISOString(),
+    items: (c.items as DashboardConsignmentItem[]) ?? [],
+    documents: (c.documents as DashboardDocument[]) ?? [],
+    receivedBy: c.receivedBy
+      ? { id: c.receivedBy.id, first_name: c.receivedBy.first_name, last_name: c.receivedBy.last_name, email: c.receivedBy.email }
+      : null,
+  }));
+
+  const allBulkOrders: DashboardBulkOrderFull[] = bulkOrderItems.map((o) => ({
+    id: o.id,
+    referenceNumber: o.referenceNumber,
+    buyerName: o.buyerName,
+    buyerEmail: null,
+    buyerPhone: null,
+    buyerCompany: o.buyerCompany ?? null,
+    status: o.status,
+    totalAmount: o.totalAmount ?? null,
+    amountPaid: o.amountPaid ?? null,
+    paymentStatus: o.paymentStatus ?? null,
+    paymentMethod: null,
+    paidAt: null,
+    invoiceNumber: o.invoiceNumber ?? null,
+    notes: null,
+    createdById: null,
+    createdAt: o.createdAt ?? new Date().toISOString(),
+    updatedAt: o.createdAt ?? new Date().toISOString(),
+    items: (o.items as DashboardBulkOrderItem[]) ?? [],
+    documents: (o.documents as DashboardDocument[]) ?? [],
+  }));
+
+  return {
+    summary,
+    recentConsignments,
+    recentBulkOrders,
+    recentConsignmentDocuments,
+    recentBulkOrderDocuments,
+    allConsignments,
+    allBulkOrders,
+  };
 }
 
 // --- API ---
@@ -220,8 +467,10 @@ const DASHBOARD_PATH = "/distribution/dashboard";
 
 export const dashboardApi = {
   /** Get full distribution dashboard (summary, recent, and all consignments/bulk orders/documents). */
-  getDashboard: (accessToken: string) =>
-    getAndUnwrap<DashboardData>(DASHBOARD_PATH, {
+  getDashboard: async (accessToken: string): Promise<DashboardData | null> => {
+    const raw = await getAndUnwrap<BackendDashboardResponse>(DASHBOARD_PATH, {
       headers: withAuth(accessToken),
-    }),
+    });
+    return mapBackendToDashboard(raw);
+  },
 };

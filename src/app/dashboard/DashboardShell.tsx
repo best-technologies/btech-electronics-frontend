@@ -18,10 +18,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   if (!accessToken) return null;
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] min-h-0">
+    <div className="flex h-[calc(100vh-4rem)] min-h-0 bg-muted/30">
       <DashboardSidebar />
-      <main className="flex-1 overflow-auto bg-background">
-        {children}
+      <main className="flex-1 min-w-0 min-h-0 overflow-auto">
+        <div className="min-h-full">{children}</div>
       </main>
     </div>
   );

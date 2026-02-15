@@ -24,7 +24,7 @@ export function ImagePlaceholder({
   return (
     <div
       className={cn(
-        "flex items-center justify-center bg-zinc-300 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 text-sm font-medium",
+        "relative flex items-center justify-center overflow-hidden bg-muted/90 text-muted-foreground",
         aspectRatio !== "auto" && aspectClasses[aspectRatio],
         "w-full",
         className
@@ -32,8 +32,17 @@ export function ImagePlaceholder({
       role="img"
       aria-label={label ?? "Image placeholder"}
     >
+      <div
+        className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+        }}
+        aria-hidden
+      />
       {label ? (
-        <span className="px-4 text-center">{label}</span>
+        <span className="relative px-4 text-center text-sm font-medium">
+          {label}
+        </span>
       ) : (
         <span className="sr-only">Image placeholder</span>
       )}
