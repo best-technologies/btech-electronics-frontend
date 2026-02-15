@@ -1,4 +1,3 @@
-import { Header } from "@/landing-page/components/Header";
 import { HeroSection } from "@/landing-page/sections/hero/HeroSection";
 import { TrustBarSection } from "@/landing-page/sections/trust-bar/TrustBarSection";
 import { WhoWeAreSection } from "@/landing-page/sections/who-we-are/WhoWeAreSection";
@@ -10,9 +9,7 @@ import { FinalCtaSection } from "@/landing-page/sections/final-cta/FinalCtaSecti
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
-      <main>
+    <main>
         <HeroSection />
         <TrustBarSection />
         <CategoriesSection />
@@ -22,6 +19,5 @@ export default function Home() {
         <LocationSection />
         <FinalCtaSection />
       </main>
-    </div>
   );
 }

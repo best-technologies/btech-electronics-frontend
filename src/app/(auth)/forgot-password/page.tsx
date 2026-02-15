@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { authApi } from "@/lib/api/auth-api";
+import { ApiError } from "@/lib/api";
 
 const RESEND_COOLDOWN_SECONDS = 5 * 60; // 5 minutes
 
@@ -23,10 +26,19 @@ function formatCountdown(seconds: number) {
 }
 
 export default function ForgotPasswordPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [resendSecondsLeft, setResendSecondsLeft] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    document.title = "Forgot password";
+  }, []);
 
   useEffect(() => {
     if (resendSecondsLeft <= 0) return;
@@ -42,25 +54,54 @@ export default function ForgotPasswordPage() {
     return () => clearInterval(t);
   }, [resendSecondsLeft]);
 
-  async function handleSend(e: React.FormEvent) {
+  async function handleRequestOtp(e: React.FormEvent) {
     e.preventDefault();
     if (sent || loading) return;
+    setError(null);
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 2000));
-    setLoading(false);
-    setSent(true);
-    setResendSecondsLeft(RESEND_COOLDOWN_SECONDS);
+    try {
+      await authApi.requestPasswordResetOtp({ email });
+      setSent(true);
+      setResendSecondsLeft(RESEND_COOLDOWN_SECONDS);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to send OTP");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function handleReset(e: React.FormEvent) {
+  async function handleReset(e: React.FormEvent) {
     e.preventDefault();
-    // TODO: wire to reset password API
+    setError(null);
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    setLoading(true);
+    try {
+      await authApi.verifyPasswordResetOtp({
+        email,
+        otp,
+        new_password: newPassword,
+      });
+      router.push("/sign-in");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to reset password");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function handleResend() {
+  async function handleResend() {
     if (resendSecondsLeft > 0) return;
-    setResendSecondsLeft(RESEND_COOLDOWN_SECONDS);
-    // In real app: trigger resend API here
+    setError(null);
+    try {
+      await authApi.requestPasswordResetOtp({ email });
+      setResendSecondsLeft(RESEND_COOLDOWN_SECONDS);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to resend OTP");
+    }
   }
 
   return (
@@ -69,12 +110,17 @@ export default function ForgotPasswordPage() {
         <CardTitle className="text-2xl">Forgot password</CardTitle>
         <CardDescription>
           {sent
-            ? "Enter your new password below."
-            : "Enter your email and we'll send you a link to reset your password."}
+            ? "Enter the OTP from your email and your new password."
+            : "Enter your email and we'll send you an OTP to reset your password."}
         </CardDescription>
       </CardHeader>
-      <form onSubmit={sent ? handleReset : handleSend}>
+      <form onSubmit={sent ? handleReset : handleRequestOtp}>
         <CardContent className="space-y-4">
+          {error && (
+            <p className="text-sm text-destructive font-medium" role="alert">
+              {error}
+            </p>
+          )}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -93,14 +139,29 @@ export default function ForgotPasswordPage() {
           {sent && (
             <>
               <div className="space-y-2">
+                <Label htmlFor="otp">OTP</Label>
+                <Input
+                  id="otp"
+                  name="otp"
+                  type="text"
+                  placeholder="Enter OTP from email"
+                  autoComplete="one-time-code"
+                  required
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="new-password">New password</Label>
                 <Input
                   id="new-password"
-                  name="password"
+                  name="new_password"
                   type="password"
                   placeholder="New password"
                   autoComplete="new-password"
                   required
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -112,6 +173,8 @@ export default function ForgotPasswordPage() {
                   placeholder="Confirm password"
                   autoComplete="new-password"
                   required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                 />
               </div>
             </>
@@ -120,12 +183,12 @@ export default function ForgotPasswordPage() {
         <CardFooter className="flex flex-col gap-4">
           {!sent ? (
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Sending…" : "Send reset link"}
+              {loading ? "Sending…" : "Send OTP"}
             </Button>
           ) : (
             <>
-              <Button type="submit" className="w-full">
-                Reset password
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Resetting…" : "Reset password"}
               </Button>
               <div className="flex items-center justify-center gap-2">
                 <Button

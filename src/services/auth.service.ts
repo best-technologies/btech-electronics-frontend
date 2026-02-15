@@ -1,14 +1,23 @@
 import { authApi } from "@/lib/api/auth-api";
 
 /**
- * Auth service — re-exports auth API for use in app/hooks.
- * Auth endpoints are unprotected (no token required).
+ * Auth service — re-exports auth API (backend-integrated).
+ * Use authApi or authService interchangeably.
  */
 export const authService = authApi;
 
 export type {
-  AuthResponse,
-  ForgotPasswordPayload,
-  ResetPasswordPayload,
+  AdminLoginOtpPayload,
+  AdminVerifyLoginOtpPayload,
+  OnboardWarehouseAdminData,
+  OnboardWarehouseAdminPayload,
+  RegisterData,
+  RegisterPayload,
+  RequestPasswordResetData,
+  RequestPasswordResetPayload,
+  SignInData,
+  SignInDataUser,
   SignInPayload,
+  UserProfileData,
+  VerifyPasswordResetPayload,
 } from "@/lib/api/auth-api";
