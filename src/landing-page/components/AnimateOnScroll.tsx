@@ -4,9 +4,10 @@ import { motion, type HTMLMotionProps } from "motion/react";
 
 type AnimationVariant = "fadeUp" | "fadeIn" | "scaleIn" | "slideLeft" | "slideRight";
 
+type MotionTarget = { opacity?: number; x?: number; y?: number; scale?: number };
 const variants: Record<
   AnimationVariant,
-  { initial: object; whileInView: object; viewport?: object }
+  { initial: MotionTarget; whileInView: MotionTarget; viewport?: { once?: boolean; margin?: string } }
 > = {
   fadeUp: {
     initial: { opacity: 0, y: 32 },
@@ -72,7 +73,7 @@ export function AnimateOnScroll({
       transition={{
         duration,
         delay,
-        ease: [0.22, 1, 0.36, 1],
+        ease: [0.22, 1, 0.36, 1] as const,
       }}
       className={className}
       {...props}

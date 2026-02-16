@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -40,10 +41,17 @@ export function Header() {
           href="/"
           className="flex items-center gap-2 text-lg font-semibold tracking-tight text-foreground transition-opacity hover:opacity-90"
         >
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">
-            BT
+          <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg">
+            <Image
+              src="/btech-logo.jpg"
+              alt="BTech-Electronics"
+              fill
+              className="object-contain"
+              sizes="36px"
+              priority
+            />
           </span>
-          Best Technologies
+          <span className="hidden sm:inline">BTech-Electronics</span>
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-2">

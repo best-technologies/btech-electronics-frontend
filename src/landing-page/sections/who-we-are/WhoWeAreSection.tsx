@@ -1,9 +1,81 @@
 "use client";
 
+import { useCallback, useEffect } from "react";
+import Image from "next/image";
+import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "motion/react";
-import { ImagePlaceholder } from "@/landing-page/components/ImagePlaceholder";
-import { MapPin } from "lucide-react";
+import { MapPin, ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { AnimateOnScroll } from "@/landing-page/components/AnimateOnScroll";
+import { MapEmbed } from "@/landing-page/components/MapEmbed";
+
+const COMPANY_CAROUSEL_SLIDES = [
+  { src: "/who-we-are/img-1.JPG", label: "Company / office" },
+  { src: "/who-we-are/img-2.JPG", label: "Company / office" },
+  { src: "/who-we-are/img-3.JPG", label: "Company / office" },
+] as const;
+
+function CompanyImageCarousel() {
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: true,
+    align: "center",
+    duration: 20,
+  });
+  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
+  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    const interval = setInterval(() => emblaApi.scrollNext(), 5000);
+    return () => clearInterval(interval);
+  }, [emblaApi]);
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-border/60 shadow-xl shadow-foreground/5">
+      <div ref={emblaRef} className="overflow-hidden">
+        <div className="flex">
+          {COMPANY_CAROUSEL_SLIDES.map((slide) => (
+            <div key={slide.src} className="min-w-0 flex-[0_0_100%]">
+              <div className="relative aspect-[4/3] w-full">
+                <Image
+                  src={slide.src}
+                  alt={slide.label}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="absolute left-2 top-1/2 -translate-y-1/2">
+        <Button
+          type="button"
+          variant="secondary"
+          size="icon"
+          className="h-9 w-9 rounded-full shadow-md"
+          onClick={scrollPrev}
+          aria-label="Previous image"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+      </div>
+      <div className="absolute right-2 top-1/2 -translate-y-1/2">
+        <Button
+          type="button"
+          variant="secondary"
+          size="icon"
+          className="h-9 w-9 rounded-full shadow-md"
+          onClick={scrollNext}
+          aria-label="Next image"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export function WhoWeAreSection() {
   return (
@@ -29,7 +101,7 @@ export function WhoWeAreSection() {
               </h3>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  Best Technologies Electronics is a distribution center in
+                  BTech-Electronics is a distribution center in
                   Ibadan, Oyo State. We sit between leading producers and
                   Nigerian wholesalers — holding significant inventory across
                   appliances and power solutions so you can order in volume with
@@ -44,13 +116,7 @@ export function WhoWeAreSection() {
               </div>
             </AnimateOnScroll>
             <AnimateOnScroll variant="slideRight" className="order-1 lg:order-2">
-              <div className="overflow-hidden rounded-2xl border border-border/60 shadow-xl shadow-foreground/5">
-                <ImagePlaceholder
-                  aspectRatio="4/3"
-                  label="Company / office"
-                  className="min-h-[260px]"
-                />
-              </div>
+              <CompanyImageCarousel />
             </AnimateOnScroll>
           </div>
 
@@ -77,7 +143,7 @@ export function WhoWeAreSection() {
                 Our location
               </h3>
               <address className="text-muted-foreground leading-relaxed not-italic">
-                Best Technologies Electronics
+                BTech-Electronics
                 <br />
                 Ibadan, Oyo State
                 <br />
@@ -95,11 +161,7 @@ export function WhoWeAreSection() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="overflow-hidden rounded-2xl border border-border/60"
             >
-              <ImagePlaceholder
-                aspectRatio="video"
-                label="Map / location"
-                className="min-h-[200px]"
-              />
+              <MapEmbed />
             </motion.div>
           </motion.div>
 
@@ -109,11 +171,13 @@ export function WhoWeAreSection() {
                 Leadership
               </h3>
               <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
-                <div className="shrink-0">
-                  <ImagePlaceholder
-                    aspectRatio="square"
-                    label="Managing Director"
-                    className="h-32 w-32 rounded-2xl overflow-hidden sm:h-40 sm:w-40"
+                <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-2xl sm:h-40 sm:w-40">
+                  <Image
+                    src="/md-img.jpg"
+                    alt="Managing Director"
+                    fill
+                    className="object-cover object-top"
+                    sizes="(max-width: 640px) 128px, 160px"
                   />
                 </div>
                 <div className="min-w-0 space-y-2">
@@ -121,7 +185,7 @@ export function WhoWeAreSection() {
                     Managing Director
                   </p>
                   <p className="text-muted-foreground leading-relaxed">
-                    Leading Best Technologies&apos; operations and partnerships
+                    Leading BTech-Electronics&apos; operations and partnerships
                     across the region. Focused on reliable supply and long-term
                     relationships with wholesalers and producers.
                   </p>

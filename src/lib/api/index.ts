@@ -55,7 +55,40 @@ export type {
   DashboardData,
   DashboardSummary,
   DocumentsSummary,
+  InvoicesSummary,
   RecentBulkOrder,
   RecentConsignment,
   RecentDocument,
+  StocksSummary,
 } from "./distribution/dashboard-api";
+
+export { invoiceApi } from "./distribution/invoice-api";
+export type {
+  CreateInvoiceItemPayload,
+  CreateInvoicePayload,
+  Invoice,
+  InvoiceItem,
+  InvoiceListAnalysis,
+  InvoiceListMeta,
+  InvoiceListResponse,
+  InvoicePayment,
+  InvoiceSortBy,
+  InvoiceSortOrder,
+  ListInvoiceParams,
+} from "./distribution/invoice-api";
+
+export { stockApi, validateStockImageFiles } from "./distribution/stock-api";
+export type {
+  CreateStockPayload,
+  DeleteStockResponse,
+  ListStockParams,
+  StockAnalysisByCategory,
+  StockListAnalysis,
+  StockListMeta,
+  StockListResponse,
+  StockProduct,
+  StockProductImage,
+  StockSortBy,
+  StockSortOrder,
+  UpdateStockPayload,
+} from "./distribution/stock-api";

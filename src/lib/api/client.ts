@@ -23,6 +23,7 @@ async function request<T>(
     params,
     timeout = API_CONFIG.defaultTimeout,
     headers: configHeaders,
+    body: configBody,
     ...init
   } = config;
 
@@ -31,6 +32,10 @@ async function request<T>(
   if (configHeaders) {
     new Headers(configHeaders).forEach((value, key) => headers.set(key, value));
   }
+  const body = configBody;
+  if (body instanceof FormData) {
+    headers.delete("Content-Type");
+  }
 
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
@@ -38,6 +43,7 @@ async function request<T>(
   try {
     const response = await fetch(url, {
       ...init,
+      body,
       headers,
       signal: controller.signal,
     });
@@ -70,7 +76,11 @@ export const apiClient = {
     request<T>(path, { ...config, method: "GET" }),
 
   post: <T>(path: string, body?: unknown, config?: ApiRequestConfig) =>
-    request<T>(path, { ...config, method: "POST", body: body ? JSON.stringify(body) : undefined }),
+    request<T>(path, {
+      ...config,
+      method: "POST",
+      body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
+    }),
 
   put: <T>(path: string, body?: unknown, config?: ApiRequestConfig) =>
     request<T>(path, { ...config, method: "PUT", body: body ? JSON.stringify(body) : undefined }),

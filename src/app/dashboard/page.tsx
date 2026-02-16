@@ -25,15 +25,17 @@ import {
   ArrowRight,
   FileCheck,
   Receipt,
+  Boxes,
+  Banknote,
 } from "lucide-react";
 import type { DashboardData } from "@/lib/api";
 
 const DASHBOARD_QUERY_KEY = "dashboard";
 
 function SummaryCards({ summary }: { summary: NonNullable<DashboardData["summary"]> }) {
-  const { consignments, bulkOrders, documents } = summary;
+  const { consignments, bulkOrders, documents, stocks, invoices } = summary;
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       <Card className="overflow-hidden border-border/60 bg-card shadow-sm transition-shadow hover:shadow-md">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
@@ -141,6 +143,100 @@ function SummaryCards({ summary }: { summary: NonNullable<DashboardData["summary
           </div>
         </CardContent>
       </Card>
+
+      {stocks != null && (
+        <Card className="overflow-hidden border-border/60 bg-card shadow-sm transition-shadow hover:shadow-md">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400">
+                  <Boxes className="h-4 w-4" />
+                </span>
+                Stocks
+              </CardTitle>
+              <span className="text-2xl font-bold text-foreground">{stocks.totalProducts}</span>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              {stocks.activeProducts} active · {formatCurrency(stocks.totalValue)} value · {stocks.totalQuantity.toLocaleString()} units
+            </p>
+            {(stocks.lowStockCount > 0 || stocks.outOfStockCount > 0) && (
+              <div className="flex flex-wrap gap-1.5">
+                {stocks.lowStockCount > 0 && (
+                  <span className="inline-flex items-center rounded-md bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                    Low stock: {stocks.lowStockCount}
+                  </span>
+                )}
+                {stocks.outOfStockCount > 0 && (
+                  <span className="inline-flex items-center rounded-md bg-destructive/15 px-2 py-0.5 text-xs font-medium text-destructive">
+                    Out of stock: {stocks.outOfStockCount}
+                  </span>
+                )}
+              </div>
+            )}
+            {stocks.byCategory.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {stocks.byCategory.slice(0, 5).map(({ category, count }) => (
+                  <span
+                    key={category}
+                    className="inline-flex items-center rounded-md bg-muted/80 px-2 py-0.5 text-xs font-medium text-muted-foreground"
+                  >
+                    {category || "Uncategorized"}: {count}
+                  </span>
+                ))}
+                {stocks.byCategory.length > 5 && (
+                  <span className="text-xs text-muted-foreground">+{stocks.byCategory.length - 5} more</span>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {invoices != null && (
+        <Card className="overflow-hidden border-border/60 bg-card shadow-sm transition-shadow hover:shadow-md">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400">
+                  <Banknote className="h-4 w-4" />
+                </span>
+                Invoices
+              </CardTitle>
+              <span className="text-2xl font-bold text-foreground">{invoices.totalInvoices}</span>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Total {formatCurrency(invoices.totalAmount)} · Paid{" "}
+              <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                {formatCurrency(invoices.totalPaid)}
+              </span>
+            </p>
+            {invoices.totalBalanceDue > 0 && (
+              <p className="text-xs">
+                Balance due{" "}
+                <span className="font-medium text-amber-600 dark:text-amber-400">
+                  {formatCurrency(invoices.totalBalanceDue)}
+                </span>
+              </p>
+            )}
+            <div className="flex flex-wrap gap-1.5">
+              {Object.entries(invoices.byStatus)
+                .filter(([, count]) => typeof count === "number" && count > 0)
+                .map(([status, count]) => (
+                  <span
+                    key={status}
+                    className="inline-flex items-center rounded-md bg-muted/80 px-2 py-0.5 text-xs font-medium text-muted-foreground"
+                  >
+                    {formatStatus(status)}: {count}
+                  </span>
+                ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
@@ -205,7 +301,7 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
-    document.title = "Dashboard | Best Technologies";
+    document.title = "Dashboard | BTech-Electronics";
   }, []);
 
   const displayName =

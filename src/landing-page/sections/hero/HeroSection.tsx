@@ -27,13 +27,13 @@ export function HeroSection() {
             className="mx-auto max-w-2xl text-center lg:max-w-none lg:text-left"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }}
           >
             <motion.div
               className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-medium tracking-wide text-primary"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] as const }}
             >
               <Package className="h-3.5 w-3.5" aria-hidden />
               Electronics distribution · Ibadan, Nigeria
@@ -55,7 +55,7 @@ export function HeroSection() {
               className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center lg:justify-start"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] as const }}
             >
               <Button
                 size="lg"
@@ -80,7 +80,7 @@ export function HeroSection() {
             className="relative mx-auto w-full max-w-xl lg:max-w-none"
             initial={{ opacity: 0, scale: 0.98, x: 24 }}
             animate={{ opacity: 1, scale: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] as const }}
           >
             <HeroCarousel />
           </motion.div>

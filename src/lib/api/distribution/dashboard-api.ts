@@ -58,10 +58,38 @@ export interface DocumentsSummary {
   };
 }
 
+export interface StocksSummary {
+  totalProducts: number;
+  activeProducts: number;
+  totalQuantity: number;
+  totalValue: number;
+  lowStockCount: number;
+  outOfStockCount: number;
+  byCategory: Array<{ category: string; count: number; [key: string]: unknown }>;
+}
+
+export interface InvoicesSummary {
+  totalInvoices: number;
+  totalAmount: number;
+  totalPaid: number;
+  totalBalanceDue: number;
+  byStatus: {
+    draft?: number;
+    issued?: number;
+    partial?: number;
+    paid?: number;
+    overdue?: number;
+    cancelled?: number;
+    [key: string]: number | undefined;
+  };
+}
+
 export interface DashboardSummary {
   consignments: ConsignmentSummary;
   bulkOrders: BulkOrderSummary;
   documents: DocumentsSummary;
+  stocks?: StocksSummary;
+  invoices?: InvoicesSummary;
 }
 
 // --- Recent list types ---
@@ -235,10 +263,30 @@ interface BackendAnalysisDocuments {
   bulkOrderByType: Record<string, number>;
 }
 
+interface BackendAnalysisStocks {
+  totalProducts: number;
+  activeProducts: number;
+  totalQuantity: number;
+  totalValue: number;
+  lowStockCount: number;
+  outOfStockCount: number;
+  byCategory: Array<{ category: string; count: number; [key: string]: unknown }>;
+}
+
+interface BackendAnalysisInvoices {
+  totalInvoices: number;
+  totalAmount: number;
+  totalPaid: number;
+  totalBalanceDue: number;
+  byStatus: Record<string, number>;
+}
+
 interface BackendAnalysis {
   consignments: BackendAnalysisConsignments;
   bulkOrders: BackendAnalysisBulkOrders;
   documents: BackendAnalysisDocuments;
+  stocks?: BackendAnalysisStocks;
+  invoices?: BackendAnalysisInvoices;
 }
 
 interface BackendConsignmentItem {
@@ -352,6 +400,26 @@ function mapBackendToDashboard(raw: BackendDashboardResponse | null): DashboardD
         receipt: 0,
       },
     },
+    ...(a?.stocks && {
+      stocks: {
+        totalProducts: a.stocks.totalProducts ?? 0,
+        activeProducts: a.stocks.activeProducts ?? 0,
+        totalQuantity: a.stocks.totalQuantity ?? 0,
+        totalValue: a.stocks.totalValue ?? 0,
+        lowStockCount: a.stocks.lowStockCount ?? 0,
+        outOfStockCount: a.stocks.outOfStockCount ?? 0,
+        byCategory: Array.isArray(a.stocks.byCategory) ? a.stocks.byCategory : [],
+      },
+    }),
+    ...(a?.invoices && {
+      invoices: {
+        totalInvoices: a.invoices.totalInvoices ?? 0,
+        totalAmount: a.invoices.totalAmount ?? 0,
+        totalPaid: a.invoices.totalPaid ?? 0,
+        totalBalanceDue: a.invoices.totalBalanceDue ?? 0,
+        byStatus: (a.invoices.byStatus as InvoicesSummary["byStatus"]) ?? {},
+      },
+    }),
   };
 
   const recentConsignments: RecentConsignment[] = consignmentItems.map((c) => ({

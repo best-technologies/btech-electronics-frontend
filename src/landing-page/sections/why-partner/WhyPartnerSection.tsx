@@ -55,8 +55,8 @@ export function WhyPartnerSection() {
             id="why-partner-heading"
             className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
           >
-            Why wholesalers choose Best Technologies
-          </h2>
+            Why wholesalers choose BTech-Electronics
+          </h2> 
           <div
             className="mx-auto mt-6 h-1 w-16 rounded-full bg-primary"
             aria-hidden
@@ -80,7 +80,7 @@ export function WhyPartnerSection() {
                 hidden: { opacity: 0, y: 32 },
                 visible: { opacity: 1, y: 0 },
               }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }}
             >
               <div className="group h-full rounded-2xl border border-border/60 bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-foreground/5 lg:p-8">
                 <motion.div

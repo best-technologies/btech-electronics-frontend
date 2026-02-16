@@ -1,17 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
-import { ImagePlaceholder } from "@/landing-page/components/ImagePlaceholder";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const HERO_SLIDES = [
-  { id: 1, label: "Appliances & Electronics" },
-  { id: 2, label: "Solar & Power Solutions" },
-  { id: 3, label: "Kitchen & Home" },
-  { id: 4, label: "TVs & Entertainment" },
-  { id: 5, label: "Inverters & Batteries" },
+  { id: 1, src: "/hero-section/applicances-electronics.jpg", label: "Appliances & Electronics" },
+  { id: 2, src: "/hero-section/solar-power-solut.jpg", label: "Solar & Power Solutions" },
+  { id: 3, src: "/hero-section/kitthen-applicances.jpg", label: "Kitchen Appliances" },
+  { id: 4, src: "/hero-section/tv's-electronics.jpg", label: "TVs & Electronics" },
 ] as const;
 
 export function HeroCarousel() {
@@ -30,7 +29,9 @@ export function HeroCarousel() {
     const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap());
     emblaApi.on("select", onSelect);
     onSelect();
-    return () => emblaApi.off("select", onSelect);
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
   }, [emblaApi]);
 
   useEffect(() => {
@@ -48,11 +49,14 @@ export function HeroCarousel() {
               key={slide.id}
               className="min-w-0 flex-[0_0_100%] sm:flex-[0_0_100%]"
             >
-              <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl shadow-foreground/5 ring-1 ring-foreground/5">
-                <ImagePlaceholder
-                  aspectRatio="video"
-                  label={slide.label}
-                  className="min-h-[280px] sm:min-h-[320px] lg:min-h-[380px]"
+              <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl shadow-foreground/5 ring-1 ring-foreground/5">
+                <Image
+                  src={slide.src}
+                  alt={slide.label}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1280px"
+                  priority={slide.id === 1}
                 />
               </div>
             </div>

@@ -68,7 +68,7 @@ export function HowItWorksSection() {
                 hidden: { opacity: 0, y: 40 },
                 visible: { opacity: 1, y: 0 },
               }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }}
             >
               <motion.div
                 className="relative z-10 flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-primary bg-background text-xl font-bold text-primary shadow-lg shadow-foreground/5"

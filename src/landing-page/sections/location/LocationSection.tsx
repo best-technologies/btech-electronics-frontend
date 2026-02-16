@@ -1,9 +1,9 @@
 "use client";
 
 import { motion } from "motion/react";
-import { ImagePlaceholder } from "@/landing-page/components/ImagePlaceholder";
 import { MapPin, Phone, MessageCircle } from "lucide-react";
 import { AnimateOnScroll } from "@/landing-page/components/AnimateOnScroll";
+import { MapEmbed } from "@/landing-page/components/MapEmbed";
 
 export function LocationSection() {
   return (
@@ -56,7 +56,7 @@ export function LocationSection() {
                 Address
               </h3>
               <address className="text-muted-foreground leading-relaxed not-italic">
-                Best Technologies Electronics
+                BTech-Electronics
                 <br />
                 Ibadan, Oyo State
                 <br />
@@ -100,11 +100,7 @@ export function LocationSection() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="overflow-hidden rounded-2xl border border-border/60 shadow-lg shadow-foreground/5"
           >
-            <ImagePlaceholder
-              aspectRatio="video"
-              label="Map / location"
-              className="min-h-[280px]"
-            />
+            <MapEmbed />
           </motion.div>
         </motion.div>
       </div>

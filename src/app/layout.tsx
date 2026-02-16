@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   title: "Best Technologies | Electronics Distribution Partner",
   description:
     "Your trusted distribution partner for electronics in Ibadan, Nigeria. TVs, appliances, inverters, solar batteries & more. Serving wholesalers across Oyo and beyond.",
+  icons: {
+    icon: "/btech-logo.jpg",
+    apple: "/btech-logo.jpg",
+  },
 };
 
 export default function RootLayout({

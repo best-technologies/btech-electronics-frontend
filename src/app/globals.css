@@ -3,71 +3,75 @@
 @plugin "tailwindcss-animate";
 
 /*
- * Brand palette (design tokens)
- * 001427 — Navy (base/dark)
- * 8d0801 — Dark red
- * bf0603 — Red (primary)
- * f18701 — Orange (accent)
+ * Brand palette — Lemon green (primary) and varieties
+ * Lemon green: vibrant lime used across the app
  */
 :root {
-  --brand-navy: #001427;
-  --brand-red-dark: #8d0801;
-  --brand-red: #bf0603;
-  --brand-orange: #f18701;
+  /* Lemon green scale */
+  --brand-lemon-50: #f7fee7;
+  --brand-lemon-100: #ecfccb;
+  --brand-lemon-200: #d9f99d;
+  --brand-lemon-300: #bef264;
+  --brand-lemon-400: #a3e635;
+  --brand-lemon-500: #84cc16;   /* primary lemon green */
+  --brand-lemon-600: #65a30d;
+  --brand-lemon-700: #4d7c0f;
+  --brand-lemon-800: #365314;
+  --brand-lemon-900: #1a2e05;
 
   /* Light theme */
   --background: #fafafa;
-  --foreground: #001427;
+  --foreground: #1a2e05;
   --card: #ffffff;
-  --card-foreground: #001427;
+  --card-foreground: #1a2e05;
   --popover: #ffffff;
-  --popover-foreground: #001427;
-  --primary: #bf0603;
+  --popover-foreground: #1a2e05;
+  --primary: #84cc16;
   --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #001427;
-  --muted: #f1f5f9;
-  --muted-foreground: #475569;
-  --accent: #fff7ed;
-  --accent-foreground: #001427;
-  --destructive: #8d0801;
+  --secondary: #ecfccb;
+  --secondary-foreground: #365314;
+  --muted: #f7fee7;
+  --muted-foreground: #4d7c0f;
+  --accent: #ecfccb;
+  --accent-foreground: #365314;
+  --destructive: #b91c1c;
   --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #bf0603;
+  --border: #d9f99d;
+  --input: #d9f99d;
+  --ring: #84cc16;
   --radius: 0.625rem;
-  --chart-1: #bf0603;
-  --chart-2: #f18701;
-  --chart-3: #8d0801;
-  --chart-4: #001427;
-  --chart-5: #475569;
+  --chart-1: #84cc16;
+  --chart-2: #65a30d;
+  --chart-3: #a3e635;
+  --chart-4: #4d7c0f;
+  --chart-5: #365314;
 }
 
 .dark {
-  --background: #001427;
-  --foreground: #f8fafc;
-  --card: #0a1a2e;
-  --card-foreground: #f8fafc;
-  --popover: #0a1a2e;
-  --popover-foreground: #f8fafc;
-  --primary: #bf0603;
-  --primary-foreground: #ffffff;
-  --secondary: #8d0801;
-  --secondary-foreground: #ffffff;
-  --muted: #0d2137;
-  --muted-foreground: #94a3b8;
-  --accent: #1e3a5f;
-  --accent-foreground: #f18701;
-  --destructive: #8d0801;
+  --background: #0f1419;
+  --foreground: #f7fee7;
+  --card: #1a2e05;
+  --card-foreground: #ecfccb;
+  --popover: #1a2e05;
+  --popover-foreground: #ecfccb;
+  --primary: #a3e635;
+  --primary-foreground: #1a2e05;
+  --secondary: #365314;
+  --secondary-foreground: #d9f99d;
+  --muted: #365314;
+  --muted-foreground: #bef264;
+  --accent: #4d7c0f;
+  --accent-foreground: #a3e635;
+  --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #1e3a5f;
-  --input: #1e3a5f;
-  --ring: #f18701;
-  --chart-1: #bf0603;
-  --chart-2: #f18701;
-  --chart-3: #8d0801;
-  --chart-4: #94a3b8;
-  --chart-5: #64748b;
+  --border: #4d7c0f;
+  --input: #4d7c0f;
+  --ring: #a3e635;
+  --chart-1: #a3e635;
+  --chart-2: #84cc16;
+  --chart-3: #bef264;
+  --chart-4: #65a30d;
+  --chart-5: #d9f99d;
 }
 
 @theme inline {

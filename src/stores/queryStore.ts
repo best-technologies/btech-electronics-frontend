@@ -40,7 +40,8 @@ export const useQueryStore = create<QueryState>((set, get) => ({
       },
     })),
 
-  getEntry: (key) => get().cache[key] as QueryEntry | undefined,
+  getEntry: <T>(key: string): QueryEntry<T> | undefined =>
+    get().cache[key] as QueryEntry<T> | undefined,
 
   invalidate: (key) =>
     set((state) => {

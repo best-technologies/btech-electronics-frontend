@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -11,6 +12,7 @@ import {
   User,
   LogOut,
   ChevronRight,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
@@ -23,10 +25,14 @@ const MAIN_NAV = [
   { href: "/dashboard/payments", label: "Payments", icon: CreditCard },
 ] as const;
 
+const MANAGEMENT_NAV = { href: "/dashboard/management", label: "Management", icon: Settings } as const;
+
 export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const clearAuth = useAuthStore((s) => s.clearAuth);
+  const role = useAuthStore((s) => s.role);
+  const isWarehouseAdmin = role === "admin";
 
   function handleLogout() {
     clearAuth();
@@ -41,8 +47,14 @@ export function DashboardSidebar() {
           href="/dashboard"
           className="flex items-center gap-2 font-semibold text-foreground transition-opacity hover:opacity-90"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-            BT
+          <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg">
+            <Image
+              src="/btech-logo.jpg"
+              alt="Best Technologies"
+              fill
+              className="object-contain"
+              sizes="36px"
+            />
           </span>
           <span className="text-base">Dashboard</span>
         </Link>
@@ -80,6 +92,35 @@ export function DashboardSidebar() {
             </Link>
           );
         })}
+        {isWarehouseAdmin && (
+          <>
+            <p className="mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Admin
+            </p>
+            <Link
+              href={MANAGEMENT_NAV.href}
+              className={cn(
+                "group flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                pathname === MANAGEMENT_NAV.href || pathname.startsWith(MANAGEMENT_NAV.href + "/")
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              <span className="flex items-center gap-3">
+                <MANAGEMENT_NAV.icon className="h-4 w-4 shrink-0" />
+                {MANAGEMENT_NAV.label}
+              </span>
+              <ChevronRight
+                className={cn(
+                  "h-4 w-4 shrink-0 opacity-0 transition-opacity",
+                  pathname === MANAGEMENT_NAV.href || pathname.startsWith(MANAGEMENT_NAV.href + "/")
+                    ? "opacity-100"
+                    : "group-hover:opacity-50"
+                )}
+              />
+            </Link>
+          </>
+        )}
       </nav>
       <div className="border-t border-border p-3 space-y-0.5">
         <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">

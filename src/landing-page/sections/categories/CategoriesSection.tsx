@@ -1,21 +1,22 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ImagePlaceholder } from "@/landing-page/components/ImagePlaceholder";
 import { AnimateOnScroll } from "@/landing-page/components/AnimateOnScroll";
 
-const CURRENT_STOCK_ITEMS = [
-  "Juice Extractor",
-  "Manual Hair fryer",
-  "Digital Hair fryer",
-  "TB-15E Blender",
-  "Hot Plate",
-  "15L Yam Pounder",
-  "TF-16A Solar Fan",
-  "FS-188",
-  "FS-738",
-  "FS-628",
+const PRODUCTS = [
+  { src: "/products/15L%20Yam%20Pounder.jpg", label: "15L Yam Pounder" },
+  { src: "/products/4IN1-Juice-Extractor.jpg", label: "4-in-1 Juice Extractor" },
+  { src: "/products/TF-16A%20Solar%20Fan.webp", label: "TF-16A Solar Fan" },
+  { src: "/products/Tb-15E%20Blender.jpg", label: "TB-15E Blender" },
+  { src: "/products/digital-10l-air-fryer.jpg", label: "Digital 10L Air Fryer" },
+  { src: "/products/hot%20plate.jpg", label: "Hot Plate" },
+  { src: "/products/juice-extractor.jpg", label: "Juice Extractor" },
+  { src: "/products/litium-batteries.jpg", label: "Lithium Batteries" },
+  { src: "/products/manual-10l-air-fryer.jpg", label: "Manual 10L Air Fryer" },
+  { src: "/products/hybrid-inverters.webp", label: "Hybrid Inverters" },
+  { src: "/products/solar-panels.png", label: "Solar Panels" },
 ] as const;
 
 export function CategoriesSection() {
@@ -56,28 +57,30 @@ export function CategoriesSection() {
           }}
         >
           <ul className="flex gap-6 min-w-max list-none p-0">
-            {CURRENT_STOCK_ITEMS.map((item) => (
+            {PRODUCTS.map((product) => (
               <motion.li
-                key={item}
+                key={product.src}
                 variants={{
                   hidden: { opacity: 0, y: 24 },
                   visible: { opacity: 1, y: 0 },
                 }}
-                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
               >
                 <Card className="group w-[220px] shrink-0 overflow-hidden border-border/80 bg-card transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-foreground/5 sm:w-[240px]">
                   <CardHeader className="p-0">
-                    <div className="overflow-hidden rounded-t-xl">
-                      <ImagePlaceholder
-                        aspectRatio="square"
-                        label={item}
-                        className="min-h-[200px] transition-transform duration-300 group-hover:scale-105 sm:min-h-[220px]"
+                    <div className="relative aspect-square w-full overflow-hidden rounded-t-xl bg-muted/30">
+                      <Image
+                        src={product.src}
+                        alt={product.label}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        sizes="240px"
                       />
                     </div>
                   </CardHeader>
                   <CardContent className="p-4">
                     <p className="line-clamp-2 text-sm font-semibold leading-tight text-foreground">
-                      {item}
+                      {product.label}
                     </p>
                   </CardContent>
                 </Card>

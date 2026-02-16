@@ -8,7 +8,7 @@ import { CreditCard, ArrowLeft } from "lucide-react";
 
 export default function PaymentsPage() {
   useEffect(() => {
-    document.title = "Payments | Best Technologies";
+    document.title = "Payments | BTech-Electronics";
   }, []);
 
   return (

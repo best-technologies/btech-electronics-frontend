@@ -57,7 +57,7 @@ const STATUS_OPTIONS: { value: ConsignmentStatus; label: string }[] = [
   { value: "closed", label: "Closed" },
 ];
 
-const transition = { duration: 0.4, ease: [0.22, 1, 0.36, 1] };
+const transition = { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const };
 
 function ItemsRow({ items }: { items: ConsignmentItem[] }) {
   if (!items?.length) return <p className="text-muted-foreground text-sm p-3">No items.</p>;
@@ -180,7 +180,7 @@ export default function ConsignmentPage() {
   const meta = listResponse?.meta;
 
   useEffect(() => {
-    document.title = "Consignment | Best Technologies";
+    document.title = "Consignment | BTech-Electronics";
   }, []);
 
   const applyFilters = () => setPage(1);
