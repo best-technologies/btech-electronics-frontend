@@ -52,6 +52,7 @@ export default function InvoicePage() {
   const [toIssueDate, setToIssueDate] = useState("");
   const [sortBy, setSortBy] = useState<InvoiceSortBy>("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const listParams: ListInvoiceParams = useMemo(
     () => ({
@@ -123,10 +124,59 @@ export default function InvoicePage() {
         </div>
       )}
 
-      <div className="w-full px-4 py-8 sm:px-6 lg:px-8 space-y-12">
-        {analysis && <InvoiceOverviewSection analysis={analysis} />}
+      <div className="w-full px-4 py-5 sm:px-6 lg:px-8 space-y-5">
+        {analysis && (
+          <InvoiceOverviewSection
+            analysis={analysis}
+            rightAction={
+              <InvoiceFiltersSection
+                slot="button"
+                filtersOpen={filtersOpen}
+                onFiltersToggle={() => setFiltersOpen((o) => !o)}
+                search={search}
+                onSearchChange={setSearch}
+                status={status}
+                onStatusChange={setStatus}
+                fromIssueDate={fromIssueDate}
+                onFromIssueDateChange={setFromIssueDate}
+                toIssueDate={toIssueDate}
+                onToIssueDateChange={setToIssueDate}
+                sortBy={sortBy}
+                onSortByChange={setSortBy}
+                sortOrder={sortOrder}
+                onSortOrderChange={setSortOrder}
+                onApply={applyFilters}
+                onClear={clearFilters}
+              />
+            }
+          />
+        )}
+
+        {!analysis && (
+          <InvoiceFiltersSection
+            filtersOpen={filtersOpen}
+            onFiltersToggle={() => setFiltersOpen((o) => !o)}
+            search={search}
+            onSearchChange={setSearch}
+            status={status}
+            onStatusChange={setStatus}
+            fromIssueDate={fromIssueDate}
+            onFromIssueDateChange={setFromIssueDate}
+            toIssueDate={toIssueDate}
+            onToIssueDateChange={setToIssueDate}
+            sortBy={sortBy}
+            onSortByChange={setSortBy}
+            sortOrder={sortOrder}
+            onSortOrderChange={setSortOrder}
+            onApply={applyFilters}
+            onClear={clearFilters}
+          />
+        )}
 
         <InvoiceFiltersSection
+          slot="panel"
+          filtersOpen={filtersOpen}
+          onFiltersToggle={() => setFiltersOpen((o) => !o)}
           search={search}
           onSearchChange={setSearch}
           status={status}
@@ -184,7 +234,6 @@ export default function InvoicePage() {
 
         {!isLoading && !isError && listResponse && items.length > 0 && (
           <>
-            <InvoiceTable items={items} />
             {meta && (
               <InvoicePagination
                 meta={meta}
@@ -196,6 +245,7 @@ export default function InvoicePage() {
                 onPageChange={setPage}
               />
             )}
+            <InvoiceTable items={items} />
           </>
         )}
       </div>

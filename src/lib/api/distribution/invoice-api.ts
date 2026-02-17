@@ -137,6 +137,9 @@ export interface InvoiceListResponse {
 
 // --- Create payload ---
 
+/** Price type used for this line (wholesale vs retail); stored for record-keeping. */
+export type InvoiceItemPriceType = "wholesale" | "retail";
+
 export interface CreateInvoiceItemPayload {
   description: string;
   productId?: string;
@@ -144,6 +147,8 @@ export interface CreateInvoiceItemPayload {
   unit?: string;
   unitPrice: number;
   totalAmount?: number;
+  /** Whether this line used wholesale or retail price; sent for record-keeping. */
+  priceType?: InvoiceItemPriceType;
 }
 
 export interface CreateInvoicePayload {

@@ -110,7 +110,7 @@ POST /distribution/invoicing
 | customerSignedBy | string | no | Customer name (signature) |
 | items | array | yes | Line items |
 
-**Item fields:** description, productId (optional), quantity, unit (default pieces), unitPrice, totalAmount (optional).
+**Item fields:** description, productId (optional), quantity, unit (default pieces), unitPrice, totalAmount (optional), priceType (optional: `wholesale` | `retail` — sent for record-keeping when user selected wholesale or retail price).
 
 **Auto-computed:** `amountInWords` (e.g. "One Hundred and Twenty-Five Thousand Naira Only"). New invoices: `amountPaid=0`, `balanceDue=totalAmount`. No stock reduction on create.
 

@@ -16,16 +16,16 @@ interface InvoiceTableProps {
 export function InvoiceTable({ items }: InvoiceTableProps) {
   return (
     <motion.section
-      className="space-y-6"
+      className="space-y-3"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ ...transition, delay: 0.15 }}
     >
-      <div className="flex items-center gap-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-          <ArrowRight className="h-4 w-4" />
+      <div className="flex items-center gap-2">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+          <ArrowRight className="h-3.5 w-3.5" />
         </span>
-        <h2 className="text-lg font-semibold text-foreground">Invoices</h2>
+        <h2 className="text-base font-semibold text-foreground">Invoices</h2>
       </div>
       <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
         <div className="overflow-x-auto">

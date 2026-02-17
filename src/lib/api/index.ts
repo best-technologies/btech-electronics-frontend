@@ -68,6 +68,7 @@ export type {
   CreateInvoicePayload,
   Invoice,
   InvoiceItem,
+  InvoiceItemPriceType,
   InvoiceListAnalysis,
   InvoiceListMeta,
   InvoiceListResponse,
@@ -76,6 +77,12 @@ export type {
   InvoiceSortOrder,
   ListInvoiceParams,
 } from "./distribution/invoice-api";
+
+export { homepageApi } from "./distribution/homepage-api";
+export type {
+  HomepageProduct,
+  HomepageProductImage,
+} from "./distribution/homepage-api";
 
 export { stockApi, validateStockImageFiles } from "./distribution/stock-api";
 export type {

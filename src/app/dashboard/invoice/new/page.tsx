@@ -218,6 +218,7 @@ export default function NewInvoicePage() {
         unit: row.unit || "pieces",
         unitPrice: row.unitPrice,
         totalAmount: row.totalAmount,
+        ...(row.priceType && { priceType: row.priceType }),
       }));
     if (items.length === 0) {
       setValidationError("Add at least one line item with description and quantity.");

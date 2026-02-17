@@ -79,10 +79,12 @@ export function ConsignmentOverviewSection({
               {STATS.map((stat, i) => {
                 const Icon = stat.icon;
                 const raw = analysis[stat.key as keyof ConsignmentListAnalysis];
-                const value =
-                  stat.format === "currency" && typeof raw === "number"
+                const value: string | number =
+                  "format" in stat && stat.format === "currency" && typeof raw === "number"
                     ? formatCurrency(raw)
-                    : raw;
+                    : typeof raw === "number" || typeof raw === "string"
+                      ? raw
+                      : "—";
                 return (
                   <motion.div
                     key={stat.label}
