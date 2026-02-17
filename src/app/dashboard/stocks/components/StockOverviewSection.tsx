@@ -79,14 +79,14 @@ export function StockOverviewSection({ analysis }: StockOverviewSectionProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ ...transition, delay: 0.05 }}
     >
-      <div className="flex items-center gap-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <TrendingUp className="h-4 w-4" />
+      <div className="flex items-center gap-1.5 sm:gap-3">
+        <span className="flex h-5 w-5 items-center justify-center rounded-md bg-primary/10 text-primary sm:h-9 sm:w-9 sm:rounded-lg">
+          <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
         </span>
-        <h2 className="text-lg font-semibold text-foreground">Overview (filtered)</h2>
+        <h2 className="text-xs font-semibold text-foreground sm:text-lg">Overview (filtered)</h2>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-2 grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-6">
         {STAT_CARDS.map((stat, i) => {
           const Icon = stat.icon;
           const value = stat.value(analysis);
@@ -98,15 +98,15 @@ export function StockOverviewSection({ analysis }: StockOverviewSectionProps) {
               transition={{ ...transition, delay: 0.06 + i * 0.03 }}
             >
               <Card className="overflow-hidden border-border/60 bg-card shadow-sm transition-all duration-200 hover:shadow-md hover:border-primary/20">
-                <CardHeader className="p-5 pb-4">
-                  <div className="flex flex-col gap-3">
-                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${stat.className}`}>
-                        <Icon className="h-5 w-5" />
+                <CardHeader className="p-2 pb-2 sm:p-5 sm:pb-4">
+                  <div className="flex flex-col gap-1 sm:gap-3">
+                    <CardTitle className="text-[10px] font-medium text-muted-foreground flex items-center gap-1 sm:text-sm sm:gap-2">
+                      <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md sm:h-10 sm:w-10 sm:rounded-lg ${stat.className}`}>
+                        <Icon className="h-2.5 w-2.5 sm:h-5 sm:w-5" />
                       </span>
-                      {stat.label}
+                      <span className="truncate">{stat.label}</span>
                     </CardTitle>
-                    <span className="text-xl font-bold tabular-nums text-foreground break-words min-w-0">
+                    <span className="text-sm font-bold tabular-nums text-foreground break-words min-w-0 sm:text-xl">
                       {value}
                     </span>
                   </div>
@@ -127,11 +127,11 @@ export function StockOverviewSection({ analysis }: StockOverviewSectionProps) {
           <button
             type="button"
             onClick={() => setByCategoryOpen((o) => !o)}
-            className="w-full flex items-center justify-between gap-2 border-b border-border bg-muted/40 px-5 py-3 text-left hover:bg-muted/60 transition-colors"
+            className="w-full flex items-center justify-between gap-2 border-b border-border bg-muted/40 px-3 py-2 text-left hover:bg-muted/60 transition-colors touch-manipulation sm:px-5 sm:py-3"
           >
-            <div className="flex items-center gap-2">
-              <FolderTree className="h-4 w-4 text-muted-foreground" />
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <FolderTree className="h-3 w-3 text-muted-foreground sm:h-4 sm:w-4" />
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs">
                 By category
               </p>
             </div>
@@ -151,22 +151,22 @@ export function StockOverviewSection({ analysis }: StockOverviewSectionProps) {
                 className="overflow-hidden"
               >
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-[11px] sm:text-sm">
                     <thead className="bg-muted/30">
                       <tr>
-                        <th className="text-left font-medium p-4 text-muted-foreground">Category</th>
-                        <th className="text-right font-medium p-4 text-muted-foreground">Count</th>
-                        <th className="text-right font-medium p-4 text-muted-foreground">Quantity</th>
-                        <th className="text-right font-medium p-4 text-muted-foreground whitespace-nowrap">Value</th>
+                        <th className="text-left font-medium px-2 py-1.5 text-muted-foreground sm:p-4">Category</th>
+                        <th className="text-right font-medium px-2 py-1.5 text-muted-foreground sm:p-4">Count</th>
+                        <th className="text-right font-medium px-2 py-1.5 text-muted-foreground sm:p-4">Qty</th>
+                        <th className="text-right font-medium px-2 py-1.5 text-muted-foreground whitespace-nowrap sm:p-4">Value</th>
                       </tr>
                     </thead>
                     <tbody>
                       {analysis.byCategory.map((row, i) => (
                         <tr key={i} className="border-t border-border/60 transition-colors hover:bg-muted/20">
-                          <td className="p-4 font-medium">{row.category ?? "Uncategorized"}</td>
-                          <td className="p-4 text-right tabular-nums">{row.count}</td>
-                          <td className="p-4 text-right tabular-nums">{row.quantity}</td>
-                          <td className="p-4 text-right tabular-nums font-medium whitespace-nowrap">{formatCurrency(row.value)}</td>
+                          <td className="px-2 py-1.5 font-medium sm:p-4">{row.category ?? "Uncategorized"}</td>
+                          <td className="px-2 py-1.5 text-right tabular-nums sm:p-4">{row.count}</td>
+                          <td className="px-2 py-1.5 text-right tabular-nums sm:p-4">{row.quantity}</td>
+                          <td className="px-2 py-1.5 text-right tabular-nums font-medium whitespace-nowrap sm:p-4">{formatCurrency(row.value)}</td>
                         </tr>
                       ))}
                     </tbody>

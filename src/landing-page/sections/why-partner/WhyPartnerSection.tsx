@@ -43,28 +43,28 @@ const DIFFERENTIATORS = [
 export function WhyPartnerSection() {
   return (
     <section
-      className="py-20 sm:py-24 lg:py-28"
+      className="py-8 sm:py-24 lg:py-28"
       aria-labelledby="why-partner-heading"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <AnimateOnScroll variant="fadeUp" as="header" className="mx-auto max-w-3xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-primary">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-primary sm:text-sm">
             Why choose us
           </p>
           <h2
             id="why-partner-heading"
-            className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
+            className="mt-2 text-lg font-bold tracking-tight text-foreground sm:mt-3 sm:text-4xl"
           >
             Why wholesalers choose BTech-Electronics
-          </h2> 
+          </h2>
           <div
-            className="mx-auto mt-6 h-1 w-16 rounded-full bg-primary"
+            className="mx-auto mt-2.5 h-1 w-16 rounded-full bg-primary sm:mt-6"
             aria-hidden
           />
         </AnimateOnScroll>
 
         <motion.ul
-          className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8 list-none p-0 m-0"
+          className="mt-6 grid gap-2.5 list-none p-0 m-0 sm:mt-16 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4 lg:gap-8"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: false, margin: "-60px" }}
@@ -82,17 +82,17 @@ export function WhyPartnerSection() {
               }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }}
             >
-              <div className="group h-full rounded-2xl border border-border/60 bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-foreground/5 lg:p-8">
+              <div className="group h-full rounded-xl border border-border/60 bg-card p-2.5 shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-foreground/5 sm:rounded-2xl sm:p-6 lg:p-8">
                 <motion.div
-                  className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary/15"
+                  className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/15 sm:mb-5 sm:h-12 sm:w-12 sm:rounded-xl"
                   whileHover={{ scale: 1.05, rotate: 3 }}
                 >
-                  <Icon className="h-6 w-6" aria-hidden />
+                  <Icon className="h-4 w-4 sm:h-6 sm:w-6" aria-hidden />
                 </motion.div>
-                <h3 className="mb-2 text-lg font-semibold text-foreground">
+                <h3 className="mb-1 text-sm font-semibold text-foreground sm:mb-2 sm:text-lg">
                   {title}
                 </h3>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed sm:text-base">
                   {description}
                 </p>
               </div>

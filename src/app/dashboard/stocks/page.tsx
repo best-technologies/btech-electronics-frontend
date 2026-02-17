@@ -26,18 +26,18 @@ function buildListKey(params: ListStockParams): string {
 
 function LoadingSkeleton() {
   return (
-    <div className="p-6 lg:p-8 space-y-8">
-      <div className="flex gap-4">
-        <div className="h-10 w-48 rounded-lg bg-muted animate-pulse" />
-        <div className="h-10 w-36 rounded-lg bg-muted animate-pulse" />
+    <div className="p-2.5 sm:p-6 lg:p-8 space-y-4 sm:space-y-8">
+      <div className="flex flex-wrap gap-2 sm:gap-4">
+        <div className="h-6 w-20 rounded-md bg-muted animate-pulse sm:h-10 sm:w-48 sm:rounded-lg" />
+        <div className="h-6 w-16 rounded-md bg-muted animate-pulse sm:h-10 sm:w-36 sm:rounded-lg" />
       </div>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-2 grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-6">
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="h-28 rounded-xl bg-muted/80 animate-pulse" />
+          <div key={i} className="h-16 rounded-lg bg-muted/80 animate-pulse sm:h-28 sm:rounded-xl" />
         ))}
       </div>
-      <div className="h-24 rounded-xl bg-muted/60 animate-pulse" />
-      <div className="h-96 rounded-xl bg-muted/60 animate-pulse" />
+      <div className="h-14 rounded-lg bg-muted/60 animate-pulse sm:h-24 sm:rounded-xl" />
+      <div className="h-40 rounded-lg bg-muted/60 animate-pulse sm:h-96 sm:rounded-xl" />
     </div>
   );
 }
@@ -118,9 +118,9 @@ export default function StocksPage() {
     return (
       <>
         <div className="border-b border-border bg-card/50">
-          <div className="w-full px-4 py-8 sm:px-6 lg:px-8">
-            <div className="h-8 w-56 rounded-lg bg-muted animate-pulse" />
-            <div className="mt-2 h-5 w-80 rounded bg-muted/70 animate-pulse" />
+          <div className="w-full px-2.5 py-3 sm:px-6 sm:py-8 lg:px-8">
+            <div className="h-4 w-24 rounded bg-muted animate-pulse sm:h-8 sm:w-56 sm:rounded-lg" />
+            <div className="mt-1.5 h-3 w-40 rounded bg-muted/70 animate-pulse sm:mt-2 sm:h-5 sm:w-80" />
           </div>
         </div>
         <LoadingSkeleton />
@@ -133,12 +133,12 @@ export default function StocksPage() {
       <StocksHeader onRefresh={() => refetch()} canManageStock={canManageStock} />
 
       {!canManageStock && (
-        <div className="w-full px-4 pt-4 sm:px-6 lg:px-8">
+        <div className="w-full px-3 pt-3 sm:px-6 sm:pt-4 lg:px-8">
           <ViewOnlyBanner areaName="stocks" />
         </div>
       )}
 
-      <div className="w-full px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+      <div className="w-full px-2.5 py-3 sm:px-6 sm:py-6 lg:px-8 space-y-3 sm:space-y-6">
         {analysis && <StockOverviewSection analysis={analysis} />}
 
         <StockFiltersSection

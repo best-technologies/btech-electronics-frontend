@@ -80,14 +80,15 @@ export function InvoiceFiltersSection({
       variant="outline"
       size="sm"
       onClick={onFiltersToggle}
-      className="gap-2 rounded-lg h-9 border-border/60 bg-card shadow-sm hover:bg-muted/30"
+      className="gap-1 rounded-md h-7 text-[11px] border-border/60 bg-card shadow-sm hover:bg-muted/30 touch-manipulation sm:gap-2 sm:rounded-lg sm:h-9 sm:text-sm"
     >
-      <Filter className="h-4 w-4" />
-      Search & filters
+      <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
+      <span className="hidden sm:inline">Search & filters</span>
+      <span className="sm:hidden">Filters</span>
       {status && (
-        <span className="text-xs text-muted-foreground">· {statusLabel}</span>
+        <span className="text-[10px] text-muted-foreground sm:text-xs">· {statusLabel}</span>
       )}
-      {filtersOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+      {filtersOpen ? <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" /> : <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />}
     </Button>
   );
 
@@ -104,70 +105,70 @@ export function InvoiceFiltersSection({
             className="overflow-hidden"
           >
             <Card className="overflow-hidden border-border/60 bg-card shadow-sm">
-              <CardHeader className="p-6 pb-5">
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-wrap items-end gap-4">
-                    <div className="flex-1 min-w-[240px] max-w-xl">
+              <CardHeader className="p-2.5 pb-2.5 sm:p-6 sm:pb-5">
+                <div className="flex flex-col gap-2 sm:gap-4">
+                  <div className="flex flex-wrap items-end gap-2 sm:gap-4">
+                    <div className="w-full min-w-0 sm:flex-1 sm:min-w-[240px] sm:max-w-xl">
                       <Label className="sr-only">Search</Label>
                       <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground sm:left-3 sm:h-4 sm:w-4" />
                         <Input
-                          placeholder="Search invoice number, customer name, company..."
+                          placeholder="Search invoice number, customer..."
                           value={search}
                           onChange={(e) => onSearchChange(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && onApply()}
-                          className="pl-9 rounded-lg h-10"
+                          className="pl-7 h-8 rounded-md text-[11px] sm:pl-9 sm:rounded-lg sm:h-10 sm:text-sm"
                         />
                       </div>
                     </div>
                     <div className="w-full sm:w-[180px]">
-                      <Label htmlFor="inv-status" className="text-xs text-muted-foreground">Status</Label>
+                      <Label htmlFor="inv-status" className="text-[10px] text-muted-foreground sm:text-xs">Status</Label>
                       <select
                         id="inv-status"
                         value={status}
                         onChange={(e) => onStatusChange(e.target.value)}
-                        className="mt-1 flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                        className="mt-0.5 flex h-8 w-full rounded-md border border-input bg-background px-2 py-1.5 text-[11px] sm:mt-1 sm:h-10 sm:rounded-lg sm:px-3 sm:py-2 sm:text-sm"
                       >
                         {STATUS_OPTIONS.map((o) => (
                           <option key={o.value || "all"} value={o.value}>{o.label}</option>
                         ))}
                       </select>
                     </div>
-                    <div className="w-full sm:w-[160px]">
-                      <Label htmlFor="inv-from-date" className="text-xs text-muted-foreground">Issue from</Label>
+                    <div className="w-[calc(50%-4px)] sm:w-[160px]">
+                      <Label htmlFor="inv-from-date" className="text-[10px] text-muted-foreground sm:text-xs">Issue from</Label>
                       <Input
                         id="inv-from-date"
                         type="date"
                         value={fromIssueDate}
                         onChange={(e) => onFromIssueDateChange(e.target.value)}
-                        className="mt-1 h-10 rounded-lg"
+                        className="mt-0.5 h-8 rounded-md text-[11px] sm:mt-1 sm:h-10 sm:rounded-lg sm:text-sm"
                       />
                     </div>
-                    <div className="w-full sm:w-[160px]">
-                      <Label htmlFor="inv-to-date" className="text-xs text-muted-foreground">Issue to</Label>
+                    <div className="w-[calc(50%-4px)] sm:w-[160px]">
+                      <Label htmlFor="inv-to-date" className="text-[10px] text-muted-foreground sm:text-xs">Issue to</Label>
                       <Input
                         id="inv-to-date"
                         type="date"
                         value={toIssueDate}
                         onChange={(e) => onToIssueDateChange(e.target.value)}
-                        className="mt-1 h-10 rounded-lg"
+                        className="mt-0.5 h-8 rounded-md text-[11px] sm:mt-1 sm:h-10 sm:rounded-lg sm:text-sm"
                       />
                     </div>
-                    <div className="flex items-end gap-2">
-                      <Button type="button" size="sm" onClick={onApply} className="h-10 rounded-lg">
+                    <div className="flex items-end gap-1.5 sm:gap-2">
+                      <Button type="button" size="sm" onClick={onApply} className="h-7 rounded-md text-[11px] touch-manipulation sm:h-10 sm:rounded-lg sm:text-sm">
                         Apply
                       </Button>
-                      <Button type="button" variant="outline" size="sm" onClick={onClear} className="h-10 rounded-lg">
+                      <Button type="button" variant="outline" size="sm" onClick={onClear} className="h-7 rounded-md text-[11px] touch-manipulation sm:h-10 sm:rounded-lg sm:text-sm">
                         Clear
                       </Button>
                     </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-border">
-                    <Label className="text-xs text-muted-foreground">Sort</Label>
+                  <div className="flex flex-wrap items-center gap-2 pt-1.5 border-t border-border sm:gap-3 sm:pt-2">
+                    <Label className="text-[10px] text-muted-foreground sm:text-xs">Sort</Label>
                     <select
                       value={sortBy}
                       onChange={(e) => onSortByChange(e.target.value as InvoiceSortBy)}
-                      className="flex h-9 rounded-lg border border-input bg-background px-3 py-2 text-sm w-[160px]"
+                      className="flex h-7 rounded-md border border-input bg-background px-2 py-1 text-[11px] w-[120px] sm:h-9 sm:rounded-lg sm:px-3 sm:py-2 sm:text-sm sm:w-[160px]"
                     >
                       {SORT_OPTIONS.map((o) => (
                         <option key={o.value} value={o.value}>{o.label}</option>
@@ -176,7 +177,7 @@ export function InvoiceFiltersSection({
                     <select
                       value={sortOrder}
                       onChange={(e) => onSortOrderChange(e.target.value as "asc" | "desc")}
-                      className="flex h-9 rounded-lg border border-input bg-background px-3 py-2 text-sm w-[100px]"
+                      className="flex h-7 rounded-md border border-input bg-background px-2 py-1 text-[11px] w-[70px] sm:h-9 sm:rounded-lg sm:px-3 sm:py-2 sm:text-sm sm:w-[100px]"
                     >
                       <option value="asc">Asc</option>
                       <option value="desc">Desc</option>

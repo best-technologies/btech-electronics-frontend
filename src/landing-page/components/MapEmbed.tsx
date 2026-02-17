@@ -13,7 +13,7 @@ const MAP_SEARCH_QUERY = "Best+Technologies+Electronics+Ibadan+Oyo+Nigeria";
 export function MapEmbed() {
   if (MAP_EMBED_URL) {
     return (
-      <div className="relative aspect-video w-full">
+      <div className="relative aspect-video w-full min-h-[180px] sm:min-h-0">
         <iframe
           src={MAP_EMBED_URL}
           title="Our location on Google Maps"

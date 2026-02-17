@@ -68,28 +68,28 @@ export function InvoiceOverviewSection({ analysis, rightAction }: InvoiceOvervie
       animate={{ opacity: 1, y: 0 }}
       transition={{ ...transition, delay: 0.05 }}
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <TrendingUp className="h-3.5 w-3.5" />
+      <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <span className="flex h-5 w-5 items-center justify-center rounded-md bg-primary/10 text-primary sm:h-8 sm:w-8 sm:rounded-lg">
+            <TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
           </span>
-          <h2 className="text-base font-semibold text-foreground">Overview</h2>
+          <h2 className="text-xs font-semibold text-foreground sm:text-base">Overview</h2>
         </div>
         {rightAction}
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid gap-2 grid-cols-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-5">
         {STATS.map(({ key, label, value, icon: Icon, className }) => (
           <Card key={key} className="overflow-hidden border-border/60 bg-card shadow-sm">
-            <CardHeader className="p-4 pb-2 pt-4">
+            <CardHeader className="p-2 pb-1.5 pt-2 sm:p-4 sm:pb-2 sm:pt-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-                  <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${className}`}>
-                    <Icon className="h-3.5 w-3.5" />
+                <CardTitle className="text-[10px] font-medium text-muted-foreground flex items-center gap-1 sm:text-xs sm:gap-2">
+                  <span className={`flex h-5 w-5 items-center justify-center rounded-md sm:h-8 sm:w-8 sm:rounded-lg ${className}`}>
+                    <Icon className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5" />
                   </span>
                   {label}
                 </CardTitle>
               </div>
-              <p className="mt-1.5 text-xl font-bold text-foreground tabular-nums">
+              <p className="mt-1 text-sm font-bold text-foreground tabular-nums sm:mt-1.5 sm:text-xl">
                 {value(analysis)}
               </p>
             </CardHeader>
@@ -97,15 +97,15 @@ export function InvoiceOverviewSection({ analysis, rightAction }: InvoiceOvervie
         ))}
       </div>
       {analysis.byStatus && Object.keys(analysis.byStatus).length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1">
           {Object.entries(analysis.byStatus)
             .filter(([, count]) => count > 0)
             .map(([status, count]) => (
               <span
                 key={status}
-                className="inline-flex items-center rounded-md border border-border bg-muted/50 px-2.5 py-1 text-xs font-medium text-muted-foreground"
+                className="inline-flex items-center rounded border border-border bg-muted/50 px-1.5 py-px text-[9px] font-medium text-muted-foreground sm:rounded-md sm:px-2.5 sm:py-1 sm:text-xs"
               >
-                {formatStatus(status)}: <span className="ml-1 font-semibold text-foreground">{count}</span>
+                {formatStatus(status)}: <span className="ml-0.5 font-semibold text-foreground sm:ml-1">{count}</span>
               </span>
             ))}
         </div>

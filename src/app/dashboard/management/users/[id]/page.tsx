@@ -38,13 +38,13 @@ const USER_DETAIL_KEY_PREFIX = "user-management-detail-";
 
 function LoadingSkeleton() {
   return (
-    <div className="p-6 lg:p-8 space-y-8">
-      <div className="h-10 w-64 rounded bg-muted animate-pulse" />
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="h-64 rounded-xl bg-muted/80 animate-pulse" />
-        <div className="h-64 rounded-xl bg-muted/80 animate-pulse" />
+    <div className="p-2.5 space-y-4 sm:p-6 sm:space-y-8 lg:p-8">
+      <div className="h-8 w-64 rounded bg-muted animate-pulse sm:h-10" />
+      <div className="grid gap-3 md:grid-cols-2 sm:gap-6">
+        <div className="h-40 rounded-lg bg-muted/80 animate-pulse sm:h-64 sm:rounded-xl" />
+        <div className="h-40 rounded-lg bg-muted/80 animate-pulse sm:h-64 sm:rounded-xl" />
       </div>
-      <div className="h-96 rounded-xl bg-muted/60 animate-pulse" />
+      <div className="h-40 rounded-lg bg-muted/60 animate-pulse sm:h-96 sm:rounded-xl" />
     </div>
   );
 }
@@ -100,7 +100,7 @@ export default function UserDetailPage() {
     return (
       <>
         <div className="border-b border-border bg-card/50">
-          <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
+          <div className="w-full px-2.5 py-3 sm:px-6 sm:py-6 lg:px-8">
             <div className="h-8 w-48 rounded bg-muted animate-pulse" />
           </div>
         </div>
@@ -111,20 +111,20 @@ export default function UserDetailPage() {
 
   if (isError || !user) {
     return (
-      <div className="p-6 lg:p-8">
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6">
-          <h1 className="text-lg font-semibold text-destructive">
+      <div className="p-2.5 sm:p-6 lg:p-8">
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-2.5 sm:rounded-xl sm:p-6">
+          <h1 className="text-xs font-semibold text-destructive sm:text-lg">
             Unable to load user
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-[11px] text-muted-foreground sm:text-sm">
             {error?.message ?? "User not found or failed to load."}
           </p>
           <div className="mt-4 flex gap-2">
-            <Button variant="outline" size="sm" className="gap-2" onClick={() => refetch()}>
-              <RefreshCw className="h-4 w-4" />
+            <Button variant="outline" size="sm" className="h-7 gap-2 text-[11px] touch-manipulation sm:h-9 sm:text-sm" onClick={() => refetch()}>
+              <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
               Retry
             </Button>
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="sm" className="h-7 text-[11px] touch-manipulation sm:h-9 sm:text-sm" asChild>
               <Link href="/dashboard/management/users">Back to users</Link>
             </Button>
           </div>
@@ -139,36 +139,36 @@ export default function UserDetailPage() {
   return (
     <>
       <div className="border-b border-border bg-card">
-        <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" asChild className="gap-2">
+        <div className="w-full px-2.5 py-3 sm:px-6 sm:py-6 lg:px-8">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Button variant="ghost" size="sm" asChild className="h-7 gap-2 text-[11px] touch-manipulation sm:h-9 sm:text-sm">
                 <Link href="/dashboard/management/users">
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
                   Back
                 </Link>
               </Button>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                <h1 className="text-sm font-bold tracking-tight text-foreground sm:text-2xl">
                   {displayName}
                 </h1>
-                <p className="mt-0.5 text-muted-foreground">{user.email}</p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-sm">{user.email}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2"
+                className="h-7 gap-2 text-[11px] touch-manipulation sm:h-9 sm:text-sm"
                 onClick={() => setEditUserOpen(true)}
                 disabled={!canManageUsers}
                 title={!canManageUsers ? "Manage user permission required" : undefined}
               >
-                <Pencil className="h-4 w-4" />
+                <Pencil className="h-3 w-3 sm:h-4 sm:w-4" />
                 Edit user
               </Button>
-              <Button variant="outline" size="sm" className="gap-2" onClick={() => refetch()}>
-                <RefreshCw className="h-4 w-4" />
+              <Button variant="outline" size="sm" className="h-7 gap-2 text-[11px] touch-manipulation sm:h-9 sm:text-sm" onClick={() => refetch()}>
+                <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
                 Refresh
               </Button>
             </div>
@@ -176,38 +176,38 @@ export default function UserDetailPage() {
         </div>
       </div>
 
-      <div className="w-full px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-        <div className="grid gap-6 md:grid-cols-2">
+      <div className="w-full px-2.5 py-3 space-y-4 sm:px-6 sm:py-8 sm:space-y-8 lg:px-8">
+        <div className="grid gap-3 md:grid-cols-2 sm:gap-6">
           <Card className="border-border/60">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <User className="h-4 w-4" />
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs flex items-center gap-2 sm:text-base">
+                <User className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
                 Profile
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div className="flex flex-wrap items-center gap-2">
+            <CardContent className="space-y-2 text-[11px] sm:space-y-3 sm:text-sm">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <StatusBadge status={formatStatus(user.status)} />
-                <span className="rounded-md bg-muted/80 px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                <span className="rounded-md bg-muted/80 px-1.5 py-px text-[9px] font-medium text-muted-foreground sm:px-2 sm:py-0.5 sm:text-xs">
                   {formatStatus(user.role)}
                 </span>
-                <span className="rounded-md bg-muted/80 px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                <span className="rounded-md bg-muted/80 px-1.5 py-px text-[9px] font-medium text-muted-foreground sm:px-2 sm:py-0.5 sm:text-xs">
                   {formatStatus(user.level)}
                 </span>
               </div>
               <p className="flex items-center gap-2 text-muted-foreground">
-                <Mail className="h-4 w-4 shrink-0" />
+                <Mail className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
                 {user.email}
               </p>
               {user.phone_number && (
                 <p className="flex items-center gap-2 text-muted-foreground">
-                  <Phone className="h-4 w-4 shrink-0" />
+                  <Phone className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
                   {user.phone_number}
                 </p>
               )}
               {user.address && (
                 <p className="flex items-center gap-2 text-muted-foreground">
-                  <MapPin className="h-4 w-4 shrink-0" />
+                  <MapPin className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
                   {user.address}
                 </p>
               )}
@@ -216,12 +216,12 @@ export default function UserDetailPage() {
               </p>
               <div className="flex flex-wrap gap-2 pt-1">
                 {user.is_email_verified && (
-                  <span className="text-xs text-emerald-600 dark:text-emerald-400">
+                  <span className="text-[9px] text-emerald-600 dark:text-emerald-400 sm:text-xs">
                     Email verified
                   </span>
                 )}
                 {user.is_otp_verified && (
-                  <span className="text-xs text-emerald-600 dark:text-emerald-400">
+                  <span className="text-[9px] text-emerald-600 dark:text-emerald-400 sm:text-xs">
                     OTP verified
                   </span>
                 )}
@@ -229,8 +229,8 @@ export default function UserDetailPage() {
                   <span
                     className={
                       user.is_active
-                        ? "text-xs text-emerald-600 dark:text-emerald-400"
-                        : "text-xs text-muted-foreground"
+                        ? "text-[9px] text-emerald-600 dark:text-emerald-400 sm:text-xs"
+                        : "text-[9px] text-muted-foreground sm:text-xs"
                     }
                   >
                     {user.is_active ? "Active" : "Inactive"}
@@ -244,14 +244,14 @@ export default function UserDetailPage() {
             user.counts?.commissionReferrals != null ||
             user.counts?.commissions != null) && (
             <Card className="border-border/60">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4" />
+              <CardHeader className="pb-2 sm:pb-3">
+                <CardTitle className="text-xs flex items-center gap-2 sm:text-base">
+                  <BarChart3 className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
                   Counts
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <dl className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+                <dl className="grid grid-cols-2 gap-2 text-[11px] sm:grid-cols-3 sm:gap-4 sm:text-sm">
                   {user.counts.orders != null && (
                     <div>
                       <dt className="text-muted-foreground">Orders</dt>
@@ -282,13 +282,13 @@ export default function UserDetailPage() {
 
         {user.store && (
           <Card className="border-border/60">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Store className="h-4 w-4" />
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs flex items-center gap-2 sm:text-base">
+                <Store className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
                 Store
               </CardTitle>
             </CardHeader>
-            <CardContent className="text-sm space-y-2">
+            <CardContent className="space-y-2 text-[11px] sm:text-sm">
               <p className="font-medium">
                 {formatFullName(user.store.first_name, user.store.last_name) ||
                   user.store.email}
@@ -312,13 +312,13 @@ export default function UserDetailPage() {
 
         {user.affiliate && (
           <Card className="border-border/60">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Award className="h-4 w-4" />
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs flex items-center gap-2 sm:text-base">
+                <Award className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
                 Affiliate
               </CardTitle>
             </CardHeader>
-            <CardContent className="text-sm space-y-2">
+            <CardContent className="space-y-2 text-[11px] sm:text-sm">
               <p className="font-medium">{user.affiliate.userName || user.affiliate.userEmail}</p>
               <p className="text-muted-foreground">{user.affiliate.userEmail}</p>
               <StatusBadge status={formatStatus(user.affiliate.status)} />
@@ -341,14 +341,14 @@ export default function UserDetailPage() {
 
         {user.wallet && (
           <Card className="border-border/60">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Wallet className="h-4 w-4" />
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs flex items-center gap-2 sm:text-base">
+                <Wallet className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
                 Wallet
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              <dl className="grid grid-cols-1 gap-2 text-[11px] sm:grid-cols-3 sm:gap-4 sm:text-sm">
                 <div>
                   <dt className="text-muted-foreground">Total earned</dt>
                   <dd className="font-medium tabular-nums">
@@ -374,25 +374,25 @@ export default function UserDetailPage() {
 
         {user.banks && user.banks.length > 0 && (
           <Card className="border-border/60">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <CreditCard className="h-4 w-4" />
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs flex items-center gap-2 sm:text-base">
+                <CreditCard className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
                 Bank accounts
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-4">
+              <ul className="space-y-2 sm:space-y-4">
                 {user.banks.map((bank) => (
                   <li
                     key={bank.id}
-                    className="rounded-lg border border-border p-4 text-sm"
+                    className="rounded-lg border border-border p-2 text-[11px] sm:p-4 sm:text-sm"
                   >
                     <p className="font-medium">{bank.bankName}</p>
-                    <p className="text-muted-foreground font-mono">
+                    <p className="font-mono text-muted-foreground">
                       {bank.accountNumber} · {bank.accountName}
                     </p>
                     {bank.bankCode && (
-                      <p className="text-xs text-muted-foreground">Code: {bank.bankCode}</p>
+                      <p className="text-[9px] text-muted-foreground sm:text-xs">Code: {bank.bankCode}</p>
                     )}
                   </li>
                 ))}
@@ -403,13 +403,13 @@ export default function UserDetailPage() {
 
         {user.allowedPartialPayment !== undefined && user.allowedPartialPayment > 0 && (
           <Card className="border-border/60">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <FileText className="h-4 w-4" />
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs flex items-center gap-2 sm:text-base">
+                <FileText className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
                 Payment settings
               </CardTitle>
             </CardHeader>
-            <CardContent className="text-sm">
+            <CardContent className="text-[11px] sm:text-sm">
               <p className="text-muted-foreground">
                 Allowed partial payment: {user.allowedPartialPayment}
               </p>

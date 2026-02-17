@@ -23,42 +23,44 @@ export function StocksHeader({ onRefresh, canManageStock = true }: StocksHeaderP
       animate={{ opacity: 1, y: 0 }}
       transition={transition}
     >
-      <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+      <div className="w-full px-2.5 py-3 sm:px-6 sm:py-6 lg:px-8">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="min-w-0">
+            <h1 className="text-sm font-bold tracking-tight text-foreground sm:text-2xl">
               Stocks
             </h1>
-            <p className="mt-0.5 text-muted-foreground">
+            <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-base">
               Master product catalog. Add products here, then use them in consignments.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={onRefresh}
-              className="gap-2"
+              className="h-7 gap-1.5 text-[11px] touch-manipulation sm:h-9 sm:gap-2 sm:text-sm"
             >
-              <RefreshCw className="h-4 w-4" />
-              Refresh
+              <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Refresh</span>
             </Button>
             {canManageStock ? (
-              <Button size="sm" className="gap-2 shadow-md shadow-primary/20 hover:shadow-primary/30" asChild>
+              <Button size="sm" className="h-7 gap-1.5 text-[11px] shadow-md shadow-primary/20 hover:shadow-primary/30 touch-manipulation sm:h-9 sm:gap-2 sm:text-sm" asChild>
                 <Link href="/dashboard/stocks/new">
-                  <Plus className="h-4 w-4" />
-                  Add new stock
+                  <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Add new stock</span>
+                  <span className="sm:hidden">Add</span>
                 </Link>
               </Button>
             ) : (
               <Button
                 size="sm"
-                className="gap-2 shadow-md cursor-not-allowed"
+                className="h-7 gap-1.5 text-[11px] shadow-md cursor-not-allowed touch-manipulation sm:h-9 sm:gap-2 sm:text-sm"
                 disabled
                 title={NO_PERMISSION_TITLE}
               >
-                <Plus className="h-4 w-4" />
-                Add new stock
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Add new stock</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             )}
           </div>

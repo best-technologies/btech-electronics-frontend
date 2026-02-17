@@ -26,9 +26,9 @@ const PERMISSIONS_QUERY_KEY = "user-management-permissions";
 
 function LoadingSkeleton() {
   return (
-    <div className="p-6 lg:p-8 space-y-6">
-      <div className="h-10 w-48 rounded-lg bg-muted animate-pulse" />
-      <div className="h-64 rounded-xl bg-muted/60 animate-pulse" />
+    <div className="p-2.5 space-y-3 sm:p-6 sm:space-y-6 lg:p-8">
+      <div className="h-8 w-48 rounded-lg bg-muted animate-pulse sm:h-10" />
+      <div className="h-40 rounded-lg bg-muted/60 animate-pulse sm:h-64 sm:rounded-xl" />
     </div>
   );
 }
@@ -132,7 +132,7 @@ export default function PermissionsManagementPage() {
     return (
       <>
         <div className="border-b border-border bg-card/50">
-          <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
+          <div className="w-full px-2.5 py-3 sm:px-6 sm:py-6 lg:px-8">
             <div className="h-8 w-48 rounded bg-muted animate-pulse" />
           </div>
         </div>
@@ -144,31 +144,31 @@ export default function PermissionsManagementPage() {
   return (
     <>
       <div className="border-b border-border bg-card">
-        <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" asChild className="gap-2">
+        <div className="w-full px-2.5 py-3 sm:px-6 sm:py-6 lg:px-8">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Button variant="ghost" size="sm" asChild className="h-7 gap-2 text-[11px] touch-manipulation sm:h-9 sm:text-sm">
                 <Link href="/dashboard/management">
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
                   Back
                 </Link>
               </Button>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                <h1 className="text-sm font-bold tracking-tight text-foreground sm:text-2xl">
                   Permissions
                 </h1>
-                <p className="mt-0.5 text-muted-foreground">
+                <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-sm">
                   Create, edit, and delete permission definitions. Assign them to users in User management.
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="gap-2" onClick={() => refetch()}>
-                <RefreshCw className="h-4 w-4" />
+              <Button variant="outline" size="sm" className="h-7 gap-2 text-[11px] touch-manipulation sm:h-9 sm:text-sm" onClick={() => refetch()}>
+                <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
                 Refresh
               </Button>
-              <Button size="sm" className="gap-2" onClick={openCreate}>
-                <Plus className="h-4 w-4" />
+              <Button size="sm" className="h-7 gap-2 text-[11px] touch-manipulation sm:h-9 sm:text-sm" onClick={openCreate}>
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
                 Create permission
               </Button>
             </div>
@@ -176,15 +176,15 @@ export default function PermissionsManagementPage() {
         </div>
       </div>
 
-      <div className="w-full px-4 py-8 sm:px-6 lg:px-8">
+      <div className="w-full px-2.5 py-3 sm:px-6 sm:py-8 lg:px-8">
         {isError && (
-          <Card className="border-destructive/30 bg-destructive/5 mb-6">
-            <CardContent className="pt-6">
-              <p className="text-sm text-destructive">
+          <Card className="mb-4 border-destructive/30 bg-destructive/5 sm:mb-6">
+            <CardContent className="pt-3 sm:pt-6">
+              <p className="text-[11px] text-destructive sm:text-sm">
                 {error?.message ?? "Failed to load permissions."}
               </p>
-              <Button variant="outline" size="sm" className="mt-3 gap-2" onClick={() => refetch()}>
-                <RefreshCw className="h-4 w-4" />
+              <Button variant="outline" size="sm" className="mt-3 h-7 gap-2 text-[11px] touch-manipulation sm:h-9 sm:text-sm" onClick={() => refetch()}>
+                <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
                 Retry
               </Button>
             </CardContent>
@@ -194,29 +194,29 @@ export default function PermissionsManagementPage() {
         <Card className="border-border/60">
           <CardContent className="p-0">
             {permissions.length === 0 && !isLoading ? (
-              <div className="flex flex-col items-center justify-center py-16 px-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-muted-foreground mb-4">
-                  <ShieldCheck className="h-7 w-7" />
+              <div className="flex flex-col items-center justify-center px-4 py-8 sm:py-16">
+                <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground sm:mb-4 sm:h-14 sm:w-14">
+                  <ShieldCheck className="h-5 w-5 sm:h-7 sm:w-7" />
                 </div>
-                <p className="text-sm font-medium text-foreground">No permissions yet</p>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="text-[11px] font-medium text-foreground sm:text-sm">No permissions yet</p>
+                <p className="mt-1 text-[11px] text-muted-foreground sm:text-sm">
                   Create a permission to assign to users.
                 </p>
-                <Button size="sm" className="mt-4 gap-2" onClick={openCreate}>
-                  <Plus className="h-4 w-4" />
+                <Button size="sm" className="mt-4 h-7 gap-2 text-[11px] touch-manipulation sm:h-9 sm:text-sm" onClick={openCreate}>
+                  <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
                   Create permission
                 </Button>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-[11px] sm:text-sm">
                   <thead className="bg-muted/50 border-b border-border">
                     <tr>
-                      <th className="text-left font-medium p-4 text-muted-foreground">Name</th>
-                      <th className="text-left font-medium p-4 text-muted-foreground">Display name</th>
-                      <th className="text-left font-medium p-4 text-muted-foreground">Category</th>
-                      <th className="text-left font-medium p-4 text-muted-foreground">Description</th>
-                      <th className="text-right font-medium p-4 text-muted-foreground w-28">Actions</th>
+                      <th className="text-left font-medium px-2 py-1.5 text-muted-foreground sm:p-4">Name</th>
+                      <th className="text-left font-medium px-2 py-1.5 text-muted-foreground sm:p-4">Display name</th>
+                      <th className="text-left font-medium px-2 py-1.5 text-muted-foreground sm:p-4">Category</th>
+                      <th className="text-left font-medium px-2 py-1.5 text-muted-foreground sm:p-4">Description</th>
+                      <th className="text-right font-medium px-2 py-1.5 text-muted-foreground w-20 sm:w-28 sm:p-4">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -225,35 +225,35 @@ export default function PermissionsManagementPage() {
                         key={p.id}
                         className="border-b border-border/60 transition-colors hover:bg-muted/30"
                       >
-                        <td className="p-4 font-mono text-foreground">{p.name}</td>
-                        <td className="p-4 font-medium text-foreground">
+                        <td className="px-2 py-1.5 font-mono text-foreground sm:p-4">{p.name}</td>
+                        <td className="px-2 py-1.5 font-medium text-foreground sm:p-4">
                           {p.displayName || p.name}
                         </td>
-                        <td className="p-4 text-muted-foreground">
+                        <td className="px-2 py-1.5 text-muted-foreground sm:p-4">
                           {p.category ? formatStatus(p.category) : "—"}
                         </td>
-                        <td className="p-4 text-muted-foreground max-w-xs truncate">
+                        <td className="max-w-xs truncate px-2 py-1.5 text-muted-foreground sm:p-4">
                           {p.description ?? "—"}
                         </td>
-                        <td className="p-4 text-right">
+                        <td className="px-2 py-1.5 text-right sm:p-4">
                           <div className="flex items-center justify-end gap-1">
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                              className="h-6 w-6 text-muted-foreground hover:text-foreground sm:h-8 sm:w-8"
                               onClick={() => openEdit(p)}
                               aria-label="Edit permission"
                             >
-                              <Pencil className="h-4 w-4" />
+                              <Pencil className="h-3 w-3 sm:h-4 sm:w-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                              className="h-6 w-6 text-muted-foreground hover:text-destructive sm:h-8 sm:w-8"
                               onClick={() => setPermissionToDelete(p)}
                               aria-label="Delete permission"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                             </Button>
                           </div>
                         </td>

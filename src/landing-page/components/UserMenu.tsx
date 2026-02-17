@@ -35,9 +35,9 @@ export function UserMenu() {
         <Button
           variant="ghost"
           size="sm"
-          className="flex items-center gap-2 text-foreground"
+          className="flex h-9 min-h-[2.25rem] items-center gap-2 text-foreground touch-manipulation"
         >
-          <span className="max-w-[140px] truncate sm:max-w-[180px]">
+          <span className="max-w-[100px] truncate sm:max-w-[180px]">
             {displayName}
           </span>
           <ChevronDown className="h-4 w-4 shrink-0 opacity-70" />

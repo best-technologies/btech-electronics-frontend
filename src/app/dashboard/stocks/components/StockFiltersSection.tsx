@@ -91,25 +91,25 @@ export function StockFiltersSection({
         <button
           type="button"
           onClick={() => onFiltersSectionOpenChange?.(true)}
-          className="flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left shadow-sm transition-colors hover:bg-muted/30 hover:border-primary/30"
+          className="flex w-full items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2 text-left shadow-sm transition-colors hover:bg-muted/30 hover:border-primary/30 touch-manipulation sm:gap-3 sm:rounded-xl sm:px-4 sm:py-3"
         >
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-              <Filter className="h-4 w-4" />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-muted text-muted-foreground sm:h-9 sm:w-9 sm:rounded-lg">
+              <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
             </span>
-            <span className="text-sm font-medium text-foreground">Search & filters</span>
+            <span className="text-[11px] font-medium text-foreground sm:text-sm">Search & filters</span>
           </div>
           <ChevronDown className="h-4 w-4 text-muted-foreground" />
         </button>
       ) : (
         <Card className="overflow-hidden border-border/60 bg-card shadow-sm">
-          <CardHeader className="p-6 pb-5">
-            <div className="flex items-center justify-between gap-4 mb-4">
-              <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                  <Filter className="h-4 w-4" />
+          <CardHeader className="p-2.5 pb-2.5 sm:p-6 sm:pb-5">
+            <div className="flex items-center justify-between gap-2 mb-2 sm:gap-4 sm:mb-4">
+              <div className="flex items-center gap-1.5 sm:gap-3">
+                <span className="flex h-5 w-5 items-center justify-center rounded-md bg-muted text-muted-foreground sm:h-9 sm:w-9 sm:rounded-lg">
+                  <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
                 </span>
-                <h2 className="text-lg font-semibold text-foreground">Search & filters</h2>
+                <h2 className="text-xs font-semibold text-foreground sm:text-lg">Search & filters</h2>
               </div>
               <Button
                 type="button"
@@ -119,12 +119,12 @@ export function StockFiltersSection({
                 className="gap-1.5 text-muted-foreground shrink-0"
               >
                 <ChevronUp className="h-4 w-4" />
-                Collapse
+                <span className="hidden sm:inline">Collapse</span>
               </Button>
             </div>
-            <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap items-end gap-4">
-              <div className="flex-1 min-w-[240px] max-w-xl">
+            <div className="flex flex-col gap-3 sm:gap-4">
+            <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+              <div className="w-full min-w-0 sm:flex-1 sm:min-w-[240px] sm:max-w-xl">
                 <Label className="sr-only">Search</Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -133,40 +133,40 @@ export function StockFiltersSection({
                     value={search}
                     onChange={(e) => onSearchChange(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && onApply()}
-                    className="pl-9 h-10 rounded-lg border-input"
+                    className="pl-8 h-8 rounded-md text-[11px] border-input sm:pl-9 sm:h-10 sm:rounded-lg sm:text-sm"
                   />
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="w-36">
+              <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:gap-4">
+                <div className="w-full sm:w-36">
                   <Label className="sr-only">Status</Label>
                   <select
                     value={isActive}
                     onChange={(e) => onIsActiveChange(e.target.value)}
-                    className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1.5 text-[11px] shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary sm:h-10 sm:rounded-lg sm:px-3 sm:py-2 sm:text-sm"
                   >
                     <option value="">All</option>
                     <option value="true">Active only</option>
                     <option value="false">Inactive only</option>
                   </select>
                 </div>
-                <div className="w-36">
+                <div className="w-[calc(50%-6px)] sm:w-36">
                   <Label className="sr-only">Stock level</Label>
                   <select
                     value={lowStock}
                     onChange={(e) => onLowStockChange(e.target.value)}
-                    className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                    className="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1.5 text-[11px] sm:h-10 sm:rounded-lg sm:px-3 sm:py-2 sm:text-sm"
                   >
                     <option value="">All</option>
                     <option value="true">Out of stock only</option>
                   </select>
                 </div>
-                <div className="w-44">
+                <div className="w-[calc(50%-6px)] sm:w-44">
                   <Label className="sr-only">Sort by</Label>
                   <select
                     value={sortBy}
                     onChange={(e) => onSortByChange(e.target.value as StockSortBy)}
-                    className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-primary/20"
+                    className="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1.5 text-[11px] shadow-sm focus:ring-2 focus:ring-primary/20 sm:h-10 sm:rounded-lg sm:px-3 sm:py-2 sm:text-sm"
                   >
                     {SORT_OPTIONS.map((o) => (
                       <option key={o.value} value={o.value}>{o.label}</option>
@@ -176,7 +176,7 @@ export function StockFiltersSection({
                 <select
                   value={sortOrder}
                   onChange={(e) => onSortOrderChange(e.target.value as "asc" | "desc")}
-                  className="flex h-10 w-28 rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1.5 text-[11px] sm:h-10 sm:w-28 sm:rounded-lg sm:px-3 sm:py-2 sm:text-sm"
                 >
                   <option value="asc">Ascending</option>
                   <option value="desc">Descending</option>
@@ -188,13 +188,14 @@ export function StockFiltersSection({
                 variant="outline"
                 size="sm"
                 onClick={() => onShowFiltersChange(!showFilters)}
-                className="gap-2 rounded-lg h-9"
+                className="gap-1.5 rounded-md h-7 text-[11px] touch-manipulation sm:gap-2 sm:rounded-lg sm:h-9 sm:text-sm"
               >
-                <SlidersHorizontal className="h-4 w-4" />
-                More filters
+                <SlidersHorizontal className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">More filters</span>
+                <span className="sm:hidden">More</span>
               </Button>
-              <Button size="sm" onClick={onApply} className="rounded-lg h-9">Apply</Button>
-              <Button variant="ghost" size="sm" onClick={onClear} className="rounded-lg h-9">Clear</Button>
+              <Button size="sm" onClick={onApply} className="rounded-md h-7 text-[11px] touch-manipulation sm:rounded-lg sm:h-9 sm:text-sm">Apply</Button>
+              <Button variant="ghost" size="sm" onClick={onClear} className="rounded-md h-7 text-[11px] touch-manipulation sm:rounded-lg sm:h-9 sm:text-sm">Clear</Button>
             </div>
 
             <AnimatePresence>

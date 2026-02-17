@@ -87,14 +87,15 @@ export function ConsignmentFiltersSection({
           variant="outline"
           size="sm"
           onClick={onFiltersToggle}
-          className="gap-2 rounded-lg h-9 border-border/60 bg-card shadow-sm hover:bg-muted/30"
+          className="gap-1 rounded-md h-7 text-[11px] border-border/60 bg-card shadow-sm hover:bg-muted/30 touch-manipulation sm:gap-2 sm:rounded-lg sm:h-9 sm:text-sm"
         >
-          <Filter className="h-4 w-4" />
-          Search & filters
+          <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
+          <span className="hidden sm:inline">Search & filters</span>
+          <span className="sm:hidden">Filters</span>
           {status && (
-            <span className="text-xs text-muted-foreground">· {statusLabel}</span>
+            <span className="text-[10px] text-muted-foreground sm:text-xs">· {statusLabel}</span>
           )}
-          {filtersOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          {filtersOpen ? <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" /> : <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />}
         </Button>
         {analysis?.bySupplier && analysis.bySupplier.length > 0 && (
           <Button
@@ -102,11 +103,12 @@ export function ConsignmentFiltersSection({
             variant="outline"
             size="sm"
             onClick={onBySupplierToggle}
-            className="gap-2 rounded-lg h-9 border-border/60 bg-card shadow-sm hover:bg-muted/30"
+            className="gap-1 rounded-md h-7 text-[11px] border-border/60 bg-card shadow-sm hover:bg-muted/30 touch-manipulation sm:gap-2 sm:rounded-lg sm:h-9 sm:text-sm"
           >
-            <Building2 className="h-4 w-4" />
-            By supplier
-            {bySupplierOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            <Building2 className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">By supplier</span>
+            <span className="sm:hidden">Supplier</span>
+            {bySupplierOpen ? <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" /> : <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />}
           </Button>
         )}
       </div>
@@ -120,29 +122,29 @@ export function ConsignmentFiltersSection({
             transition={transition}
             className="overflow-hidden"
           >
-            <div className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
-              <div className="border-b border-border bg-muted/40 px-5 py-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="rounded-lg border border-border overflow-hidden bg-card shadow-sm sm:rounded-xl">
+              <div className="border-b border-border bg-muted/40 px-3 py-2 sm:px-5 sm:py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs">
                   By supplier (top 10)
                 </p>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-[11px] sm:text-sm">
                   <thead className="bg-muted/30">
                     <tr>
-                      <th className="text-left font-medium p-4 text-muted-foreground">Supplier</th>
-                      <th className="text-right font-medium p-4 text-muted-foreground">Count</th>
-                      <th className="text-right font-medium p-4 text-muted-foreground">Total qty</th>
-                      <th className="text-right font-medium p-4 text-muted-foreground whitespace-nowrap">Total cost</th>
+                      <th className="text-left font-medium px-2 py-1.5 text-muted-foreground sm:p-4">Supplier</th>
+                      <th className="text-right font-medium px-2 py-1.5 text-muted-foreground sm:p-4">Count</th>
+                      <th className="text-right font-medium px-2 py-1.5 text-muted-foreground sm:p-4">Total qty</th>
+                      <th className="text-right font-medium px-2 py-1.5 text-muted-foreground whitespace-nowrap sm:p-4">Total cost</th>
                     </tr>
                   </thead>
                   <tbody>
                     {analysis.bySupplier.map((s, i) => (
                       <tr key={i} className="border-t border-border/60 transition-colors hover:bg-muted/20">
-                        <td className="p-4 font-medium">{s.supplierName}</td>
-                        <td className="p-4 text-right tabular-nums">{s.count}</td>
-                        <td className="p-4 text-right tabular-nums">{s.totalQuantity}</td>
-                        <td className="p-4 text-right tabular-nums font-medium whitespace-nowrap">
+                        <td className="px-2 py-1.5 font-medium sm:p-4">{s.supplierName}</td>
+                        <td className="px-2 py-1.5 text-right tabular-nums sm:p-4">{s.count}</td>
+                        <td className="px-2 py-1.5 text-right tabular-nums sm:p-4">{s.totalQuantity}</td>
+                        <td className="px-2 py-1.5 text-right tabular-nums font-medium whitespace-nowrap sm:p-4">
                           {formatCurrency(s.totalCost)}
                         </td>
                       </tr>
@@ -165,29 +167,29 @@ export function ConsignmentFiltersSection({
             className="overflow-hidden"
           >
             <Card className="overflow-hidden border-border/60 bg-card shadow-sm">
-              <CardHeader className="p-6 pb-5">
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-wrap items-end gap-4">
-                    <div className="flex-1 min-w-[240px] max-w-xl">
+              <CardHeader className="p-2.5 pb-2.5 sm:p-6 sm:pb-5">
+                <div className="flex flex-col gap-2 sm:gap-4">
+                  <div className="flex flex-wrap items-end gap-2 sm:gap-4">
+                    <div className="w-full min-w-0 sm:flex-1 sm:min-w-[240px] sm:max-w-xl">
                       <Label className="sr-only">Search</Label>
                       <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground sm:left-3 sm:h-4 sm:w-4" />
                         <Input
                           placeholder="Search reference, invoice, supplier..."
                           value={search}
                           onChange={(e) => setSearch(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && onApplyFilters()}
-                          className="pl-9 h-10 rounded-lg border-input"
+                          className="pl-7 h-8 rounded-md text-[11px] border-input sm:pl-9 sm:h-10 sm:rounded-lg sm:text-sm"
                         />
                       </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-4">
-                      <div className="w-40">
+                    <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:gap-4">
+                      <div className="w-full sm:w-40">
                         <Label className="sr-only">Status</Label>
                         <select
                           value={status}
                           onChange={(e) => setStatus(e.target.value as ConsignmentStatus | "")}
-                          className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          className="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1.5 text-[11px] shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary sm:h-10 sm:rounded-lg sm:px-3 sm:py-2 sm:text-sm"
                         >
                           <option value="">All statuses</option>
                           {STATUS_OPTIONS.map((o) => (
@@ -197,12 +199,12 @@ export function ConsignmentFiltersSection({
                           ))}
                         </select>
                       </div>
-                      <div className="w-44">
+                      <div className="w-[calc(50%-6px)] sm:w-44">
                         <Label className="sr-only">Sort by</Label>
                         <select
                           value={sortBy}
                           onChange={(e) => setSortBy(e.target.value as ConsignmentSortBy)}
-                          className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-primary/20"
+                          className="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1.5 text-[11px] shadow-sm focus:ring-2 focus:ring-primary/20 sm:h-10 sm:rounded-lg sm:px-3 sm:py-2 sm:text-sm"
                         >
                           {SORT_OPTIONS.map((o) => (
                             <option key={o.value} value={o.value}>
@@ -214,27 +216,28 @@ export function ConsignmentFiltersSection({
                       <select
                         value={sortOrder}
                         onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
-                        className="flex h-10 w-28 rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                        className="flex h-8 w-[calc(50%-6px)] rounded-md border border-input bg-background px-2 py-1.5 text-[11px] sm:h-10 sm:w-28 sm:rounded-lg sm:px-3 sm:py-2 sm:text-sm"
                       >
                         <option value="asc">Ascending</option>
                         <option value="desc">Descending</option>
                       </select>
                     </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-3 pt-1">
+                  <div className="flex flex-wrap items-center gap-2 pt-0.5 sm:gap-3 sm:pt-1">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setShowFilters((s) => !s)}
-                      className="gap-2 rounded-lg h-9"
+                      className="gap-1.5 rounded-md h-7 text-[11px] touch-manipulation sm:gap-2 sm:rounded-lg sm:h-9 sm:text-sm"
                     >
-                      <SlidersHorizontal className="h-4 w-4" />
-                      More filters
+                      <SlidersHorizontal className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">More filters</span>
+                      <span className="sm:hidden">More</span>
                     </Button>
-                    <Button size="sm" onClick={onApplyFilters} className="rounded-lg h-9">
+                    <Button size="sm" onClick={onApplyFilters} className="rounded-md h-7 text-[11px] touch-manipulation sm:rounded-lg sm:h-9 sm:text-sm">
                       Apply
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={onClearFilters} className="rounded-lg h-9">
+                    <Button variant="ghost" size="sm" onClick={onClearFilters} className="rounded-md h-7 text-[11px] touch-manipulation sm:rounded-lg sm:h-9 sm:text-sm">
                       Clear
                     </Button>
                   </div>

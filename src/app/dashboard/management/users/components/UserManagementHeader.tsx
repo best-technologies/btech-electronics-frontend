@@ -21,13 +21,13 @@ export function UserManagementHeader({ onRefresh, onOnboardAdmin, canManageUsers
       animate={{ opacity: 1, y: 0 }}
       transition={transition}
     >
-      <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="w-full px-2.5 py-3 sm:px-6 lg:px-8 sm:py-6">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            <h1 className="text-sm font-bold tracking-tight text-foreground sm:text-2xl">
               User management
             </h1>
-            <p className="mt-0.5 text-muted-foreground">
+            <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-sm">
               View and manage users, roles, and status.
             </p>
           </div>
@@ -36,20 +36,20 @@ export function UserManagementHeader({ onRefresh, onOnboardAdmin, canManageUsers
               variant="outline"
               size="sm"
               onClick={onRefresh}
-              className="gap-2"
+              className="h-7 gap-2 text-[11px] touch-manipulation sm:h-9 sm:text-sm"
             >
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
               Refresh
             </Button>
             {onOnboardAdmin !== undefined && (
               <Button
                 size="sm"
-                className="gap-2"
+                className="h-7 gap-2 text-[11px] touch-manipulation sm:h-9 sm:text-sm"
                 onClick={onOnboardAdmin}
                 disabled={!canManageUsers}
                 title={!canManageUsers ? "You don't have permission to perform this action. Contact an administrator if you need access." : undefined}
               >
-                <UserPlus className="h-4 w-4" />
+                <UserPlus className="h-3 w-3 sm:h-4 sm:w-4" />
                 Onboard admin
               </Button>
             )}

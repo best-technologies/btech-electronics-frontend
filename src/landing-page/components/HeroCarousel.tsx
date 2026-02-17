@@ -42,14 +42,14 @@ export function HeroCarousel() {
 
   return (
     <div className="relative w-full">
-      <div className="overflow-hidden rounded-2xl" ref={emblaRef}>
-        <div className="flex touch-pan-y gap-4">
+      <div className="overflow-hidden rounded-xl sm:rounded-2xl" ref={emblaRef}>
+        <div className="flex touch-pan-y gap-2 sm:gap-4">
           {HERO_SLIDES.map((slide) => (
             <div
               key={slide.id}
-              className="min-w-0 flex-[0_0_100%] sm:flex-[0_0_100%]"
+              className="min-w-0 flex-[0_0_100%]"
             >
-              <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl shadow-foreground/5 ring-1 ring-foreground/5">
+              <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-border/60 bg-card shadow-2xl shadow-foreground/5 ring-1 ring-foreground/5 sm:rounded-2xl">
                 <Image
                   src={slide.src}
                   alt={slide.label}
@@ -63,35 +63,35 @@ export function HeroCarousel() {
           ))}
         </div>
       </div>
-      <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
+      <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5 sm:bottom-4 sm:gap-2">
         {HERO_SLIDES.map((_, i) => (
           <button
             key={i}
             type="button"
             aria-label={`Go to slide ${i + 1}`}
-            className={`h-2 rounded-full bg-primary/40 transition-all duration-300 hover:bg-primary/60 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+            className={`h-2 min-w-[0.5rem] rounded-full bg-primary/40 transition-all duration-300 hover:bg-primary/60 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:bg-primary/80 touch-manipulation ${
               selectedIndex === i ? "w-6 bg-primary" : "w-2"
             }`}
             onClick={() => emblaApi?.scrollTo(i)}
           />
         ))}
       </div>
-      <div className="absolute left-2 top-1/2 hidden -translate-y-1/2 gap-2 sm:flex">
+      <div className="absolute left-1 top-1/2 flex -translate-y-1/2 gap-2 sm:left-2">
         <Button
           variant="secondary"
           size="icon"
-          className="h-10 w-10 rounded-full shadow-lg"
+          className="h-9 w-9 rounded-full shadow-lg touch-manipulation sm:h-10 sm:w-10"
           onClick={scrollPrev}
           aria-label="Previous slide"
         >
           <ChevronLeft className="h-5 w-5" />
         </Button>
       </div>
-      <div className="absolute right-2 top-1/2 hidden -translate-y-1/2 gap-2 sm:flex">
+      <div className="absolute right-1 top-1/2 flex -translate-y-1/2 gap-2 sm:right-2">
         <Button
           variant="secondary"
           size="icon"
-          className="h-10 w-10 rounded-full shadow-lg"
+          className="h-9 w-9 rounded-full shadow-lg touch-manipulation sm:h-10 sm:w-10"
           onClick={scrollNext}
           aria-label="Next slide"
         >

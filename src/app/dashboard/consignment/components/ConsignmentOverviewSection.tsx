@@ -50,16 +50,18 @@ export function ConsignmentOverviewSection({
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center gap-3 rounded-lg border border-border/60 bg-card px-4 py-3 text-left shadow-sm hover:bg-muted/30 transition-colors"
+        className="flex w-full items-center gap-1.5 rounded-md border border-border/60 bg-card px-2.5 py-2 text-left shadow-sm hover:bg-muted/30 transition-colors touch-manipulation sm:gap-3 sm:rounded-lg sm:px-4 sm:py-3"
       >
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <TrendingUp className="h-4 w-4" />
+        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary sm:h-9 sm:w-9 sm:rounded-lg">
+          <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
         </span>
-        <span className="font-medium text-foreground">Overview (filtered)</span>
-        <span className="text-sm text-muted-foreground">
-          {analysis.totalConsignments} consignment{analysis.totalConsignments !== 1 ? "s" : ""}
-          {analysis.totalLineItems != null && ` · ${analysis.totalLineItems} line items`}
-        </span>
+        <div className="min-w-0 flex-1">
+          <span className="font-medium text-foreground text-[11px] sm:text-base">Overview (filtered)</span>
+          <span className="ml-2 hidden text-sm text-muted-foreground sm:inline">
+            {analysis.totalConsignments} consignment{analysis.totalConsignments !== 1 ? "s" : ""}
+            {analysis.totalLineItems != null && ` · ${analysis.totalLineItems} line items`}
+          </span>
+        </div>
         {isOpen ? (
           <ChevronDown className="h-4 w-4 ml-auto text-muted-foreground" />
         ) : (
@@ -75,7 +77,7 @@ export function ConsignmentOverviewSection({
             transition={transition}
             className="space-y-6 overflow-hidden"
           >
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7">
+            <div className="grid gap-2 grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7">
               {STATS.map((stat, i) => {
                 const Icon = stat.icon;
                 const raw = analysis[stat.key as keyof ConsignmentListAnalysis];
@@ -93,17 +95,17 @@ export function ConsignmentOverviewSection({
                     transition={{ ...transition, delay: 0.06 + i * 0.03 }}
                   >
                     <Card className="overflow-hidden border-border/60 bg-card shadow-sm transition-all duration-200 hover:shadow-md hover:border-primary/20">
-                      <CardHeader className="p-5 pb-4">
-                        <div className="flex flex-col gap-3">
-                          <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <CardHeader className="p-2 pb-2 sm:p-5 sm:pb-4">
+                        <div className="flex flex-col gap-1 sm:gap-3">
+                          <CardTitle className="text-[10px] font-medium text-muted-foreground flex items-center gap-1 sm:text-sm sm:gap-2">
                             <span
-                              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${stat.className}`}
+                              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md sm:h-10 sm:w-10 sm:rounded-lg ${stat.className}`}
                             >
-                              <Icon className="h-5 w-5" />
+                              <Icon className="h-2.5 w-2.5 sm:h-5 sm:w-5" />
                             </span>
-                            {stat.label}
+                            <span className="truncate">{stat.label}</span>
                           </CardTitle>
-                          <span className="text-xl font-bold tabular-nums text-foreground break-words min-w-0">
+                          <span className="text-sm font-bold tabular-nums text-foreground break-words min-w-0 sm:text-xl">
                             {value}
                           </span>
                         </div>

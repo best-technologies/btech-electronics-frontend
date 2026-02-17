@@ -462,6 +462,27 @@ export default function InvoiceDetailPage() {
               </div>
             )}
 
+            {/* Company bank details */}
+            <div className="mt-6 rounded-lg border border-border bg-muted/20 p-4 sm:p-5">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                Payment account details
+              </h3>
+              <dl className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                <div>
+                  <dt className="text-muted-foreground text-xs">Bank</dt>
+                  <dd className="font-medium text-foreground mt-0.5">Zenith Bank</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground text-xs">Account number</dt>
+                  <dd className="font-medium text-foreground font-mono mt-0.5">1312105308</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground text-xs">Account name</dt>
+                  <dd className="font-medium text-foreground mt-0.5">Best Technologies LTD</dd>
+                </div>
+              </dl>
+            </div>
+
             {/* Signatures */}
             {(invoice.managerSignedBy || invoice.customerSignedBy) && (
               <div className="grid grid-cols-2 gap-8 mt-8 pt-6 border-t border-border">
