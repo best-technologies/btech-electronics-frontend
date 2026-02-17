@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore, selectHasManageStock } from "@/stores/authStore";
 import { stockApi, type ListStockParams, type StockSortBy } from "@/lib/api";
 import { useQuery } from "@/hooks/useQuery";
 import {
@@ -11,6 +11,7 @@ import {
   StockTable,
   StockPagination,
 } from "./components";
+import { ViewOnlyBanner } from "@/components/ViewOnlyBanner";
 import { Boxes, Plus } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,7 @@ function LoadingSkeleton() {
 
 export default function StocksPage() {
   const accessToken = useAuthStore((s) => s.accessToken);
+  const canManageStock = useAuthStore(selectHasManageStock);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(DEFAULT_LIMIT);
   const [search, setSearch] = useState("");
@@ -56,6 +58,7 @@ export default function StocksPage() {
   const [sortBy, setSortBy] = useState<StockSortBy>("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [showFilters, setShowFilters] = useState(false);
+  const [filtersSectionOpen, setFiltersSectionOpen] = useState(false);
 
   const listParams: ListStockParams = useMemo(
     () => ({
@@ -127,12 +130,20 @@ export default function StocksPage() {
 
   return (
     <>
-      <StocksHeader onRefresh={() => refetch()} />
+      <StocksHeader onRefresh={() => refetch()} canManageStock={canManageStock} />
 
-      <div className="w-full px-4 py-8 sm:px-6 lg:px-8 space-y-12">
+      {!canManageStock && (
+        <div className="w-full px-4 pt-4 sm:px-6 lg:px-8">
+          <ViewOnlyBanner areaName="stocks" />
+        </div>
+      )}
+
+      <div className="w-full px-4 py-6 sm:px-6 lg:px-8 space-y-6">
         {analysis && <StockOverviewSection analysis={analysis} />}
 
         <StockFiltersSection
+          filtersSectionOpen={filtersSectionOpen}
+          onFiltersSectionOpenChange={setFiltersSectionOpen}
           search={search}
           onSearchChange={setSearch}
           sku={sku}
@@ -179,18 +190,29 @@ export default function StocksPage() {
             </div>
             <p className="text-sm font-medium text-foreground">No products match your filters</p>
             <p className="mt-1 text-sm text-muted-foreground">Try adjusting filters or add a new product.</p>
-            <Button asChild className="mt-4 gap-2 rounded-lg" size="sm">
-              <Link href="/dashboard/stocks/new">
+            {canManageStock ? (
+              <Button asChild className="mt-4 gap-2 rounded-lg" size="sm">
+                <Link href="/dashboard/stocks/new">
+                  <Plus className="h-4 w-4" />
+                  Add new stock
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                className="mt-4 gap-2 rounded-lg cursor-not-allowed"
+                size="sm"
+                disabled
+                title="You don't have permission to perform this action. Contact an administrator if you need access."
+              >
                 <Plus className="h-4 w-4" />
                 Add new stock
-              </Link>
-            </Button>
+              </Button>
+            )}
           </div>
         )}
 
         {!isLoading && !isError && listResponse && items.length > 0 && (
           <>
-            <StockTable items={items} />
             {meta && (
               <StockPagination
                 meta={meta}
@@ -202,6 +224,7 @@ export default function StocksPage() {
                 onPageChange={setPage}
               />
             )}
+            <StockTable items={items} />
           </>
         )}
       </div>

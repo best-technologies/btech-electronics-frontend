@@ -119,6 +119,7 @@ export interface UserProfileData {
   profile_picture: string | null;
   role: string;
   status: "active" | "suspended" | "inactive";
+  /** Permission names for access control. Returned by GET /auth/fetch-user-details. */
   permissions: string[];
   is_affiliate: boolean;
   affiliate_status: string;

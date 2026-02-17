@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore, selectHasManageInvoice } from "@/stores/authStore";
 import {
   invoiceApi,
   stockApi,
@@ -37,6 +37,8 @@ function getDefaultDueDate(issueDate: string): string {
 export default function NewInvoicePage() {
   const router = useRouter();
   const accessToken = useAuthStore((s) => s.accessToken);
+  const userProfile = useAuthStore((s) => s.userProfile);
+  const canManageInvoice = useAuthStore(selectHasManageInvoice);
 
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
@@ -77,6 +79,12 @@ export default function NewInvoicePage() {
   useEffect(() => {
     document.title = "New invoice | BTech-Electronics";
   }, []);
+
+  useEffect(() => {
+    if (userProfile != null && !canManageInvoice) {
+      router.replace("/dashboard/invoice");
+    }
+  }, [userProfile, canManageInvoice, router]);
 
   useEffect(() => {
     if (issueDate && !dueDate) setDueDate(getDefaultDueDate(issueDate));

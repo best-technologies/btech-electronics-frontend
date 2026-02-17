@@ -5,7 +5,7 @@ import ReactDOM from "react-dom";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore, selectHasManageInvoice } from "@/stores/authStore";
 import { invoiceApi, type Invoice } from "@/lib/api";
 import { useQuery } from "@/hooks/useQuery";
 import { useMutation } from "@/hooks/useMutation";
@@ -47,6 +47,7 @@ export default function InvoiceDetailPage() {
   const params = useParams();
   const id = params?.id as string | undefined;
   const accessToken = useAuthStore((s) => s.accessToken);
+  const canManageInvoice = useAuthStore(selectHasManageInvoice);
 
   const [pdfDownloading, setPdfDownloading] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
@@ -526,6 +527,8 @@ export default function InvoiceDetailPage() {
                             onChange={(e) => handleAmountChange(e, invoice.balanceDue)}
                             placeholder={formatCurrency(invoice.balanceDue)}
                             className="w-full h-9 rounded-md tabular-nums pr-9"
+                            disabled={!canManageInvoice}
+                            title={!canManageInvoice ? "Manage invoice permission required" : undefined}
                           />
                           {paymentAmount.trim() !== "" && (
                             <button
@@ -550,6 +553,8 @@ export default function InvoiceDetailPage() {
                           accept={RECEIPT_ACCEPT}
                           onChange={(e) => setPaymentReceipt(e.target.files?.[0] ?? null)}
                           className="w-full h-9 rounded-md text-sm file:mr-2 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1 file:text-xs file:font-medium file:text-primary-foreground"
+                          disabled={!canManageInvoice}
+                          title={!canManageInvoice ? "Manage invoice permission required" : undefined}
                         />
                         <p className="text-xs text-muted-foreground">
                           JPG, PNG or PDF, max {RECEIPT_MAX_MB}MB
@@ -601,16 +606,18 @@ export default function InvoiceDetailPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => handleRecordPayment(true)}
-                          disabled={!canRecordPartial || recordPaymentMutation.isPending}
+                          disabled={!canManageInvoice || !canRecordPartial || recordPaymentMutation.isPending}
                           className="w-full h-9"
+                          title={!canManageInvoice ? "Manage invoice permission required" : undefined}
                         >
                           {recordPaymentMutation.isPending ? "Saving…" : "Record partial payment"}
                         </Button>
                         <Button
                           size="sm"
                           onClick={() => handleRecordPayment(false)}
-                          disabled={!canMarkFullyPaid || recordPaymentMutation.isPending}
+                          disabled={!canManageInvoice || !canMarkFullyPaid || recordPaymentMutation.isPending}
                           className="w-full h-9"
+                          title={!canManageInvoice ? "Manage invoice permission required" : undefined}
                         >
                           Mark as fully paid
                         </Button>
@@ -634,7 +641,8 @@ export default function InvoiceDetailPage() {
                         size="sm"
                         className="w-full h-9 gap-2 text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700 dark:border-amber-800 dark:hover:bg-amber-950/50"
                         onClick={() => setShowUnmarkConfirm(true)}
-                        disabled={unmarkPaidMutation.isPending}
+                        disabled={!canManageInvoice || unmarkPaidMutation.isPending}
+                        title={!canManageInvoice ? "Manage invoice permission required" : undefined}
                       >
                         <Undo2 className="h-4 w-4" />
                         {unmarkPaidMutation.isPending ? "Reverting…" : "Unmark as paid"}

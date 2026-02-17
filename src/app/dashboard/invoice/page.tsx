@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore, selectHasManageInvoice } from "@/stores/authStore";
 import { invoiceApi, type ListInvoiceParams, type InvoiceSortBy } from "@/lib/api";
 import { useQuery } from "@/hooks/useQuery";
 import {
@@ -11,6 +11,7 @@ import {
   InvoiceTable,
   InvoicePagination,
 } from "./components";
+import { ViewOnlyBanner } from "@/components/ViewOnlyBanner";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, FileText } from "lucide-react";
 import Link from "next/link";
@@ -42,6 +43,7 @@ function LoadingSkeleton() {
 
 export default function InvoicePage() {
   const accessToken = useAuthStore((s) => s.accessToken);
+  const canManageInvoices = useAuthStore(selectHasManageInvoice);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(DEFAULT_LIMIT);
   const [search, setSearch] = useState("");
@@ -113,7 +115,13 @@ export default function InvoicePage() {
 
   return (
     <>
-      <InvoiceHeader onRefresh={() => refetch()} />
+      <InvoiceHeader onRefresh={() => refetch()} canManageInvoices={canManageInvoices} />
+
+      {!canManageInvoices && (
+        <div className="w-full px-4 pt-4 sm:px-6 lg:px-8">
+          <ViewOnlyBanner areaName="invoices" />
+        </div>
+      )}
 
       <div className="w-full px-4 py-8 sm:px-6 lg:px-8 space-y-12">
         {analysis && <InvoiceOverviewSection analysis={analysis} />}
@@ -155,11 +163,22 @@ export default function InvoicePage() {
             </div>
             <p className="text-sm font-medium text-foreground">No invoices match your filters</p>
             <p className="mt-1 text-sm text-muted-foreground">Create your first invoice to get started.</p>
-            <Button asChild className="mt-4 gap-2 rounded-lg" size="sm">
-              <Link href="/dashboard/invoice/new">
+            {canManageInvoices ? (
+              <Button asChild className="mt-4 gap-2 rounded-lg" size="sm">
+                <Link href="/dashboard/invoice/new">
+                  New invoice
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                className="mt-4 gap-2 rounded-lg cursor-not-allowed"
+                size="sm"
+                disabled
+                title="You don't have permission to perform this action. Contact an administrator if you need access."
+              >
                 New invoice
-              </Link>
-            </Button>
+              </Button>
+            )}
           </div>
         )}
 

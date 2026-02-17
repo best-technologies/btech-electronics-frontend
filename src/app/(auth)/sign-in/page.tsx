@@ -45,7 +45,7 @@ export default function SignInPage() {
           setAuth(data.access_token, "admin");
           const profile = await authApi.fetchUserDetails(data.access_token);
           if (profile) setUserProfile(profile);
-          router.push("/");
+          router.push("/dashboard");
           router.refresh();
         }
       } else {
@@ -58,7 +58,7 @@ export default function SignInPage() {
           setAuth(data.access_token, "user");
           const profile = await authApi.fetchUserDetails(data.access_token);
           if (profile) setUserProfile(profile);
-          router.push("/");
+          router.push("/dashboard");
           router.refresh();
         } else if ("role" in data && data.role === "admin") {
           setNeedsOtp(true);

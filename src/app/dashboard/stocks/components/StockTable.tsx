@@ -6,7 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { stockApi, type StockProduct, type UpdateStockPayload } from "@/lib/api";
 import { useMutation } from "@/hooks/useMutation";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Boxes, Trash2 } from "lucide-react";
+import { Boxes, Trash2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductImageThumbnailWithPreview, ProductImagePlaceholder } from "./ProductImageUpload";
 import { InlineEditableCell } from "./InlineEditableCell";
@@ -88,10 +88,12 @@ export function StockTable({ items }: StockTableProps) {
               </tr>
             </thead>
             <tbody>
-              {items.map((row, index) => (
+              {items.map((row, index) => {
+                const isOutOfStock = row.currentStock === 0;
+                return (
                 <motion.tr
                   key={row.id}
-                  className="border-t border-border/60 transition-colors hover:bg-muted/30"
+                  className={`border-t border-border/60 transition-colors hover:bg-muted/30 ${isOutOfStock ? "bg-destructive/10 hover:bg-destructive/15" : ""}`}
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ ...transition, delay: index * 0.02 }}
@@ -195,7 +197,16 @@ export function StockTable({ items }: StockTableProps) {
                     disabled={updateMutation.isPending}
                     placeholder="pieces"
                   />
-                  <td className="p-4 text-right tabular-nums font-medium">{row.currentStock}</td>
+                  <td className="p-4 text-right">
+                    {isOutOfStock ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-md bg-destructive/20 px-2 py-1 text-destructive font-semibold tabular-nums">
+                        <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />
+                        0 — Out of stock
+                      </span>
+                    ) : (
+                      <span className="tabular-nums font-medium">{row.currentStock}</span>
+                    )}
+                  </td>
                   <InlineEditableCell
                     value={row.costPrice ?? ""}
                     type="number"
@@ -261,7 +272,8 @@ export function StockTable({ items }: StockTableProps) {
                     </Button>
                   </td>
                 </motion.tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         </div>

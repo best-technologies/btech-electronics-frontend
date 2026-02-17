@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Header } from "@/landing-page/components/Header";
+import { ConditionalHeader } from "@/components/ConditionalHeader";
+import { AuthRehydrate } from "@/components/AuthRehydrate";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -40,8 +41,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <AuthRehydrate />
           <div className="flex min-h-screen flex-col bg-background text-foreground">
-            <Header />
+            <ConditionalHeader />
             <div className="flex-1 min-h-0 flex flex-col">
               {children}
             </div>

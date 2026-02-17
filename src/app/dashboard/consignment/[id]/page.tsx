@@ -3,14 +3,17 @@
 import { useCallback, useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore, selectHasManageConsignment, selectHasManageStock } from "@/stores/authStore";
 import {
   consignmentApi,
   type ConsignmentDetail,
   type ConsignmentItem,
+  type ConsignmentStatus,
   type AddConsignmentItemPayload,
   type UpdateConsignmentItemPayload,
+  type StockSearchItem,
 } from "@/lib/api";
+import { ProductSearchSelect } from "@/components/ProductSearchSelect";
 import { useQuery } from "@/hooks/useQuery";
 import { useMutation } from "@/hooks/useMutation";
 import { formatDate, formatStatus, formatCurrency } from "@/lib/utils";
@@ -28,16 +31,30 @@ const emptyAddItem: AddConsignmentItemPayload = {
   unit: "pieces",
 };
 
+const STATUS_OPTIONS: { value: ConsignmentStatus; label: string }[] = [
+  { value: "pending", label: "Pending" },
+  { value: "received", label: "Received (delivered)" },
+  { value: "inspected", label: "Inspected" },
+  { value: "available", label: "Available" },
+  { value: "partial_out", label: "Partial out" },
+  { value: "closed", label: "Closed" },
+];
+
 export default function ConsignmentDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string;
   const accessToken = useAuthStore((s) => s.accessToken);
+  const canManageConsignment = useAuthStore(selectHasManageConsignment);
+  const canManageStock = useAuthStore(selectHasManageStock);
 
   const [addForm, setAddForm] = useState<AddConsignmentItemPayload>(emptyAddItem);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<UpdateConsignmentItemPayload>({});
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [statusConfirmOpen, setStatusConfirmOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<ConsignmentStatus | null>(null);
+  const [addFormSelectedProduct, setAddFormSelectedProduct] = useState<StockSearchItem | null>(null);
 
   const queryKey = `consignment-${id}`;
   const { data: consignment, isLoading, isError, error, refetch } = useQuery({
@@ -52,6 +69,7 @@ export default function ConsignmentDetailPage() {
     invalidateKeys: "consignment",
     onSuccess: () => {
       setAddForm(emptyAddItem);
+      setAddFormSelectedProduct(null);
       refetch();
     },
   });
@@ -76,6 +94,16 @@ export default function ConsignmentDetailPage() {
     },
   });
 
+  const updateStatusMutation = useMutation({
+    mutationFn: (status: ConsignmentStatus) => consignmentApi.updateStatus(accessToken!, id, status),
+    invalidateKeys: "consignment",
+    onSuccess: () => {
+      setStatusConfirmOpen(false);
+      setPendingStatus(null);
+      refetch();
+    },
+  });
+
   const startEdit = useCallback((item: ConsignmentItem) => {
     setEditingItemId(item.id);
     setEditForm({
@@ -95,6 +123,25 @@ export default function ConsignmentDetailPage() {
     setEditingItemId(null);
     setEditForm({});
   }, []);
+
+  const handleStatusChange = useCallback(
+    (newStatus: ConsignmentStatus, currentStatus: ConsignmentStatus) => {
+      if (newStatus === currentStatus) return;
+      if (newStatus === "received" && currentStatus === "pending") {
+        setPendingStatus("received");
+        setStatusConfirmOpen(true);
+        return;
+      }
+      updateStatusMutation.mutate(newStatus);
+    },
+    [updateStatusMutation]
+  );
+
+  const confirmStatusToReceived = useCallback(() => {
+    if (pendingStatus === "received") {
+      updateStatusMutation.mutate("received");
+    }
+  }, [pendingStatus, updateStatusMutation]);
 
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
@@ -178,14 +225,65 @@ export default function ConsignmentDetailPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-lg">{c.referenceNumber} · {c.supplierName}</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Status: {formatStatus(c.status)} · Delivery: {formatDate(c.deliveryDate)}
-            {c.overallTotalCartons != null && ` · Total cartons: ${c.overallTotalCartons}`}
-            {c.overallTotalQuantity != null && ` · Total qty: ${c.overallTotalQuantity}`}
-            {c.overallTotalCost != null && ` · Total cost: ${formatCurrency(c.overallTotalCost)}`}
-          </p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <span className="font-medium text-foreground">Status:</span>
+              {canManageConsignment ? (
+                <select
+                  value={c.status}
+                  onChange={(e) => handleStatusChange(e.target.value as ConsignmentStatus, c.status)}
+                  disabled={updateStatusMutation.isPending}
+                  className="rounded-md border border-input bg-background px-2 py-1 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  {(c.status === "pending"
+                    ? STATUS_OPTIONS
+                    : STATUS_OPTIONS.filter((o) => o.value !== "pending")
+                  ).map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                formatStatus(c.status)
+              )}
+            </span>
+            <span>Delivery: {formatDate(c.deliveryDate)}</span>
+            {c.overallTotalCartons != null && <span>Total cartons: {c.overallTotalCartons}</span>}
+            {c.overallTotalQuantity != null && <span>Total qty: {c.overallTotalQuantity}</span>}
+            {c.overallTotalCost != null && <span>Total cost: {formatCurrency(c.overallTotalCost)}</span>}
+          </div>
         </CardHeader>
       </Card>
+
+      {/* Warning when marking as received (delivered) — cannot be reverted */}
+      {statusConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" aria-modal="true" role="dialog">
+          <Card className="w-full max-w-md border-amber-500/50 bg-card shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-lg">Mark as delivered?</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                You are about to set this consignment to <strong>Received (delivered)</strong>. This will update product stock and record the delivery. This action cannot be undone — once set to delivered, the status cannot be changed back to pending.
+              </p>
+            </CardHeader>
+            <CardContent className="flex justify-end gap-2 pt-0">
+              <Button
+                variant="outline"
+                onClick={() => { setStatusConfirmOpen(false); setPendingStatus(null); }}
+                disabled={updateStatusMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmStatusToReceived}
+                disabled={updateStatusMutation.isPending}
+              >
+                {updateStatusMutation.isPending ? "Updating…" : "Yes, mark as delivered"}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <Card className="mb-6">
         <CardHeader className="flex flex-row items-center justify-between">
@@ -200,7 +298,7 @@ export default function ConsignmentDetailPage() {
                   <th className="text-right font-medium p-3">Cartons</th>
                   <th className="text-right font-medium p-3">Qty</th>
                   <th className="text-left font-medium p-3">Unit</th>
-                  <th className="text-right font-medium p-3">Unit price</th>
+                  <th className="text-right font-medium p-3">Wholesale Price</th>
                   <th className="text-right font-medium p-3">Total cost</th>
                   <th className="w-28 p-2">Actions</th>
                 </tr>
@@ -242,7 +340,7 @@ export default function ConsignmentDetailPage() {
                                 />
                               </div>
                               <div className="space-y-1">
-                                <Label className="text-xs">Unit price</Label>
+                                <Label className="text-xs">Wholesale Price</Label>
                                 <Input
                                   type="number"
                                   step="0.01"
@@ -260,7 +358,7 @@ export default function ConsignmentDetailPage() {
                                 />
                               </div>
                             </div>
-                            <Button type="submit" size="sm" disabled={updateItemMutation.isPending}>Save</Button>
+                            <Button type="submit" size="sm" disabled={!canManageConsignment || updateItemMutation.isPending}>Save</Button>
                             <Button type="button" size="sm" variant="ghost" onClick={cancelEdit}>Cancel</Button>
                           </form>
                         </td>
@@ -280,13 +378,14 @@ export default function ConsignmentDetailPage() {
                                 size="sm"
                                 variant="destructive"
                                 onClick={() => deleteItemMutation.mutateAsync(item.id)}
-                                disabled={deleteItemMutation.isPending}
+                                disabled={!canManageConsignment || deleteItemMutation.isPending}
+                                title={!canManageConsignment ? "Manage consignment permission required" : undefined}
                               >
                                 Confirm
                               </Button>
                               <Button size="sm" variant="ghost" onClick={() => setDeleteConfirmId(null)}>Cancel</Button>
                             </span>
-                          ) : (
+                          ) : canManageConsignment ? (
                             <span className="flex items-center gap-1">
                               <Button size="sm" variant="ghost" onClick={() => startEdit(item)} className="gap-1">
                                 <Pencil className="h-3.5 w-3.5" /> Edit
@@ -300,6 +399,8 @@ export default function ConsignmentDetailPage() {
                                 <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             </span>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">—</span>
                           )}
                         </td>
                       </>
@@ -315,6 +416,7 @@ export default function ConsignmentDetailPage() {
         </CardContent>
       </Card>
 
+      {canManageConsignment && (
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
@@ -325,14 +427,25 @@ export default function ConsignmentDetailPage() {
         <CardContent>
           <form onSubmit={handleAddItem} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="add-productName">Product name *</Label>
-                <Input
-                  id="add-productName"
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="add-product">Product *</Label>
+                <ProductSearchSelect
+                  accessToken={accessToken}
                   value={addForm.productName}
-                  onChange={(e) => setAddForm((f) => ({ ...f, productName: e.target.value }))}
-                  placeholder="e.g. Smartphone 128GB"
-                  required
+                  onSelect={(p) => {
+                    setAddFormSelectedProduct(p);
+                    setAddForm((f) => ({
+                      ...f,
+                      productName: p?.name ?? "",
+                      sku: p?.sku ?? f.sku ?? "",
+                      unit: p?.unit ?? f.unit ?? "pieces",
+                      unitPrice: p?.costPrice ?? f.unitPrice ?? 0,
+                    }));
+                  }}
+                  placeholder="Search by name or SKU…"
+                  id="add-product"
+                  addNewProductHref="/dashboard/stocks/new"
+                  canAddNewProduct={canManageStock}
                 />
               </div>
               <div className="space-y-2">
@@ -356,7 +469,7 @@ export default function ConsignmentDetailPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="add-unitPrice">Unit price *</Label>
+                <Label htmlFor="add-unitPrice">Wholesale Price *</Label>
                 <Input
                   id="add-unitPrice"
                   type="number"
@@ -392,6 +505,7 @@ export default function ConsignmentDetailPage() {
           </form>
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }

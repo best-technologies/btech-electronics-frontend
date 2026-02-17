@@ -107,6 +107,26 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* Consignment form: neutral borders/inputs (less lemon) for a calmer, pro look */
+.consignment-form {
+  --input: #e5e7eb;
+  --border: #e5e7eb;
+}
+.dark .consignment-form {
+  --input: #374151;
+  --border: #374151;
+}
+
+/* New stock form: same neutral look as consignment form */
+.stocks-form {
+  --input: #e5e7eb;
+  --border: #e5e7eb;
+}
+.dark .stocks-form {
+  --input: #374151;
+  --border: #374151;
+}
+
 html {
   scroll-behavior: smooth;
 }

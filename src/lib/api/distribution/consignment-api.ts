@@ -333,4 +333,10 @@ export const consignmentApi = {
     deleteAndUnwrap<ConsignmentAfterItemDelete>(`${BASE}/${consignmentId}/items/${itemId}`, {
       headers: withAuth(accessToken),
     }),
+
+  /** Update consignment status. PATCH .../consignment/:id/status. Setting to "received" updates stock and cannot be reverted to pending. */
+  updateStatus: (accessToken: string, consignmentId: string, status: ConsignmentStatus) =>
+    patchAndUnwrap<ConsignmentDetail>(`${BASE}/${consignmentId}/status`, { status }, {
+      headers: withAuth(accessToken),
+    }),
 };

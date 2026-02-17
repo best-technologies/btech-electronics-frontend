@@ -30,6 +30,8 @@ export interface StockProduct {
   unit: string;
   currentStock: number;
   costPrice: number | null;
+  normalSellingPrice: number | null;
+  discountedSellingPrice: number | null;
   reorderLevel: number | null;
   warehouseLocation: string | null;
   images: StockProductImage[] | null;
@@ -111,6 +113,8 @@ export interface CreateStockPayload {
   unit?: string;
   initialStock?: number;
   costPrice?: number;
+  normalSellingPrice?: number;
+  discountedSellingPrice?: number;
   reorderLevel?: number;
   warehouseLocation?: string;
   isActive?: boolean;
@@ -126,6 +130,8 @@ export interface UpdateStockPayload {
   category?: string;
   unit?: string;
   costPrice?: number;
+  normalSellingPrice?: number;
+  discountedSellingPrice?: number;
   reorderLevel?: number;
   warehouseLocation?: string;
   isActive?: boolean;
@@ -136,6 +142,17 @@ export interface DeleteStockResponse {
   id: string;
   sku: string;
   name: string;
+}
+
+/** Lightweight product from stock search (GET /distribution/stock/search). Pass images=true to include images. */
+export interface StockSearchItem {
+  id: string;
+  sku: string;
+  name: string;
+  currentStock: number;
+  unit: string;
+  costPrice: number | null;
+  images?: StockProductImage[] | null;
 }
 
 // --- API ---
@@ -189,6 +206,8 @@ function buildCreateFormData(payload: CreateStockPayload, imageFiles?: File[]): 
   if (payload.unit != null && payload.unit !== "") form.set("unit", payload.unit);
   if (payload.initialStock != null) form.set("initialStock", String(payload.initialStock));
   if (payload.costPrice != null) form.set("costPrice", String(payload.costPrice));
+  if (payload.normalSellingPrice != null) form.set("normalSellingPrice", String(payload.normalSellingPrice));
+  if (payload.discountedSellingPrice != null) form.set("discountedSellingPrice", String(payload.discountedSellingPrice));
   if (payload.reorderLevel != null) form.set("reorderLevel", String(payload.reorderLevel));
   if (payload.warehouseLocation != null && payload.warehouseLocation !== "") form.set("warehouseLocation", payload.warehouseLocation);
   form.set("isActive", payload.isActive !== false ? "true" : "false");
@@ -286,4 +305,15 @@ export const stockApi = {
     deleteAndUnwrap<DeleteStockResponse>(`${STOCK_PATH}/${productId}`, {
       headers: withAuth(accessToken),
     }),
+
+  /** Search active distribution products by SKU or name (max 20). Query: q, images=true for image URLs. */
+  search: (accessToken: string, q: string, options?: { images?: boolean }) => {
+    const query = typeof q === "string" && q.trim() ? q.trim() : "";
+    const params: Record<string, string> = query ? { q: query } : {};
+    if (options?.images) params.images = "true";
+    return getAndUnwrap<StockSearchItem[]>(`${STOCK_PATH}/search`, {
+      params: Object.keys(params).length ? params : undefined,
+      headers: withAuth(accessToken),
+    }).then((data) => (Array.isArray(data) ? data : []));
+  },
 };

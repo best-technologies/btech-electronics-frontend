@@ -3,7 +3,7 @@
 import { useEffect, useState, Fragment, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore, selectHasManageConsignment } from "@/stores/authStore";
 import {
   consignmentApi,
   type Consignment,
@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { ViewOnlyBanner } from "@/components/ViewOnlyBanner";
 import {
   Plus,
   ChevronDown,
@@ -69,7 +70,7 @@ function ItemsRow({ items }: { items: ConsignmentItem[] }) {
           <th className="font-medium p-2 text-right">Cartons</th>
           <th className="font-medium p-2 text-right">Qty</th>
           <th className="font-medium p-2">Unit</th>
-          <th className="font-medium p-2 text-right">Unit price</th>
+          <th className="font-medium p-2 text-right">Wholesale Price</th>
           <th className="font-medium p-2 text-right">Total cost</th>
         </tr>
       </thead>
@@ -113,6 +114,7 @@ function LoadingSkeleton() {
 
 export default function ConsignmentPage() {
   const accessToken = useAuthStore((s) => s.accessToken);
+  const canManageConsignment = useAuthStore(selectHasManageConsignment);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(DEFAULT_LIMIT);
@@ -242,16 +244,34 @@ export default function ConsignmentPage() {
                 <RefreshCw className="h-4 w-4" />
                 Refresh
               </Button>
-              <Button asChild size="sm" className="gap-2 shadow-md shadow-primary/20 hover:shadow-primary/30">
-                <Link href="/dashboard/consignment/new">
+              {canManageConsignment ? (
+                <Button asChild size="sm" className="gap-2 shadow-md shadow-primary/20 hover:shadow-primary/30">
+                  <Link href="/dashboard/consignment/new">
+                    <Plus className="h-4 w-4" />
+                    Register new consignment
+                  </Link>
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  className="gap-2 shadow-md cursor-not-allowed"
+                  disabled
+                  title="You don't have permission to perform this action. Contact an administrator if you need access."
+                >
                   <Plus className="h-4 w-4" />
                   Register new consignment
-                </Link>
-              </Button>
+                </Button>
+              )}
             </div>
           </div>
         </div>
       </motion.div>
+
+      {!canManageConsignment && (
+        <div className="w-full px-4 pt-4 sm:px-6 lg:px-8">
+          <ViewOnlyBanner areaName="consignment" />
+        </div>
+      )}
 
       <div className="w-full px-4 py-8 sm:px-6 lg:px-8 space-y-12">
         {/* Analysis cards */}
@@ -569,12 +589,24 @@ export default function ConsignmentPage() {
             </div>
             <p className="text-sm font-medium text-foreground">No consignments match your filters</p>
             <p className="mt-1 text-sm text-muted-foreground">Try adjusting filters or register a new consignment.</p>
-            <Button asChild className="mt-4 gap-2 rounded-lg" size="sm">
-              <Link href="/dashboard/consignment/new">
+            {canManageConsignment ? (
+              <Button asChild className="mt-4 gap-2 rounded-lg" size="sm">
+                <Link href="/dashboard/consignment/new">
+                  <Plus className="h-4 w-4" />
+                  Register consignment
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                className="mt-4 gap-2 rounded-lg cursor-not-allowed"
+                size="sm"
+                disabled
+                title="You don't have permission to perform this action. Contact an administrator if you need access."
+              >
                 <Plus className="h-4 w-4" />
                 Register consignment
-              </Link>
-            </Button>
+              </Button>
+            )}
           </motion.div>
         )}
 
@@ -654,12 +686,25 @@ export default function ConsignmentPage() {
                             </td>
                             <td className="p-4 tabular-nums">{c.items?.length ?? 0}</td>
                             <td className="p-3">
-                              <Button variant="ghost" size="sm" asChild className="gap-2 rounded-lg">
-                                <Link href={`/dashboard/consignment/${c.id}`}>
+                              {canManageConsignment ? (
+                                <Button variant="ghost" size="sm" asChild className="gap-2 rounded-lg">
+                                  <Link href={`/dashboard/consignment/${c.id}`}>
+                                    <Pencil className="h-3.5 w-3.5" />
+                                    Manage
+                                  </Link>
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="gap-2 rounded-lg cursor-not-allowed"
+                                  disabled
+                                  title="You don't have permission to perform this action. Contact an administrator if you need access."
+                                >
                                   <Pencil className="h-3.5 w-3.5" />
                                   Manage
-                                </Link>
-                              </Button>
+                                </Button>
+                              )}
                             </td>
                           </motion.tr>
                           <AnimatePresence>

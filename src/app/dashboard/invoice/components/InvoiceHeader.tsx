@@ -7,9 +7,11 @@ import Link from "next/link";
 
 interface InvoiceHeaderProps {
   onRefresh: () => void;
+  /** When false, New invoice is disabled (manage invoice permission required). */
+  canManageInvoices?: boolean;
 }
 
-export function InvoiceHeader({ onRefresh }: InvoiceHeaderProps) {
+export function InvoiceHeader({ onRefresh, canManageInvoices = true }: InvoiceHeaderProps) {
   return (
     <motion.div
       className="border-b border-border bg-card"
@@ -32,12 +34,24 @@ export function InvoiceHeader({ onRefresh }: InvoiceHeaderProps) {
               <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
-            <Button size="sm" className="gap-2 shadow-md shadow-primary/20 hover:shadow-primary/30" asChild>
-              <Link href="/dashboard/invoice/new">
+            {canManageInvoices ? (
+              <Button size="sm" className="gap-2 shadow-md shadow-primary/20 hover:shadow-primary/30" asChild>
+                <Link href="/dashboard/invoice/new">
+                  <Plus className="h-4 w-4" />
+                  New invoice
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                className="gap-2 shadow-md cursor-not-allowed"
+                disabled
+                title="You don't have permission to perform this action. Contact an administrator if you need access."
+              >
                 <Plus className="h-4 w-4" />
                 New invoice
-              </Link>
-            </Button>
+              </Button>
+            )}
           </div>
         </div>
       </div>

@@ -2,11 +2,15 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { useAuthStore, selectHasManagePayment } from "@/stores/authStore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ViewOnlyBanner } from "@/components/ViewOnlyBanner";
 import { CreditCard, ArrowLeft } from "lucide-react";
 
 export default function PaymentsPage() {
+  const canManagePayment = useAuthStore(selectHasManagePayment);
+
   useEffect(() => {
     document.title = "Payments | BTech-Electronics";
   }, []);
@@ -21,6 +25,11 @@ export default function PaymentsPage() {
           </p>
         </div>
       </div>
+      {!canManagePayment && (
+        <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8">
+          <ViewOnlyBanner areaName="payments" />
+        </div>
+      )}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Card className="border-border/60">
           <CardContent className="flex flex-col items-center justify-center py-16">

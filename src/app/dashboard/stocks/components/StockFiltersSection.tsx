@@ -5,7 +5,7 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, SlidersHorizontal, Filter } from "lucide-react";
+import { Search, SlidersHorizontal, Filter, ChevronDown, ChevronUp } from "lucide-react";
 import type { ListStockParams, StockSortBy } from "@/lib/api";
 
 const transition = { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const };
@@ -42,6 +42,8 @@ interface StockFiltersSectionProps {
   onSortOrderChange: (v: "asc" | "desc") => void;
   showFilters: boolean;
   onShowFiltersChange: (v: boolean) => void;
+  filtersSectionOpen?: boolean;
+  onFiltersSectionOpenChange?: (v: boolean) => void;
   onApply: () => void;
   onClear: () => void;
 }
@@ -69,26 +71,56 @@ export function StockFiltersSection({
   onSortOrderChange,
   showFilters,
   onShowFiltersChange,
+  filtersSectionOpen = false,
+  onFiltersSectionOpenChange,
   onApply,
   onClear,
 }: StockFiltersSectionProps) {
+  const isExpanded = onFiltersSectionOpenChange ? filtersSectionOpen : true;
+
   return (
     <motion.section
-      className="space-y-6"
+      className="space-y-3"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ ...transition, delay: 0.1 }}
     >
-      <div className="flex items-center gap-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-          <Filter className="h-4 w-4" />
-        </span>
-        <h2 className="text-lg font-semibold text-foreground">Search & filters</h2>
-      </div>
-
-      <Card className="overflow-hidden border-border/60 bg-card shadow-sm">
-        <CardHeader className="p-6 pb-5">
-          <div className="flex flex-col gap-4">
+      {!isExpanded ? (
+        <button
+          type="button"
+          onClick={() => onFiltersSectionOpenChange?.(true)}
+          className="flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left shadow-sm transition-colors hover:bg-muted/30 hover:border-primary/30"
+        >
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+              <Filter className="h-4 w-4" />
+            </span>
+            <span className="text-sm font-medium text-foreground">Search & filters</span>
+          </div>
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        </button>
+      ) : (
+        <Card className="overflow-hidden border-border/60 bg-card shadow-sm">
+          <CardHeader className="p-6 pb-5">
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <Filter className="h-4 w-4" />
+                </span>
+                <h2 className="text-lg font-semibold text-foreground">Search & filters</h2>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onFiltersSectionOpenChange?.(false)}
+                className="gap-1.5 text-muted-foreground shrink-0"
+              >
+                <ChevronUp className="h-4 w-4" />
+                Collapse
+              </Button>
+            </div>
+            <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-end gap-4">
               <div className="flex-1 min-w-[240px] max-w-xl">
                 <Label className="sr-only">Search</Label>
@@ -197,9 +229,10 @@ export function StockFiltersSection({
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
-        </CardHeader>
-      </Card>
+            </div>
+          </CardHeader>
+        </Card>
+      )}
     </motion.section>
   );
 }

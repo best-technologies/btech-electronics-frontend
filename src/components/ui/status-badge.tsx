@@ -17,6 +17,9 @@ const STATUS_STYLES: Record<string, string> = {
   packing_list: "bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-400 border-violet-200 dark:border-violet-800",
   delivery_note: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800",
   receipt: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
+  active: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
+  suspended: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-400 border-amber-200 dark:border-amber-800",
+  inactive: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700",
 };
 
 export function StatusBadge({

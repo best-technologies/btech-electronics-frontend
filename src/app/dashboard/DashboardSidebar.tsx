@@ -10,9 +10,10 @@ import {
   FileText,
   CreditCard,
   User,
+  Users,
   LogOut,
   ChevronRight,
-  Settings,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
@@ -25,7 +26,10 @@ const MAIN_NAV = [
   { href: "/dashboard/payments", label: "Payments", icon: CreditCard },
 ] as const;
 
-const MANAGEMENT_NAV = { href: "/dashboard/management", label: "Management", icon: Settings } as const;
+const MANAGEMENT_NAV = [
+  { href: "/dashboard/management/users", label: "User management", icon: Users },
+  { href: "/dashboard/management/permissions", label: "Permissions", icon: ShieldCheck },
+] as const;
 
 export function DashboardSidebar() {
   const pathname = usePathname();
@@ -97,28 +101,34 @@ export function DashboardSidebar() {
             <p className="mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Admin
             </p>
-            <Link
-              href={MANAGEMENT_NAV.href}
-              className={cn(
-                "group flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                pathname === MANAGEMENT_NAV.href || pathname.startsWith(MANAGEMENT_NAV.href + "/")
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              )}
-            >
-              <span className="flex items-center gap-3">
-                <MANAGEMENT_NAV.icon className="h-4 w-4 shrink-0" />
-                {MANAGEMENT_NAV.label}
-              </span>
-              <ChevronRight
-                className={cn(
-                  "h-4 w-4 shrink-0 opacity-0 transition-opacity",
-                  pathname === MANAGEMENT_NAV.href || pathname.startsWith(MANAGEMENT_NAV.href + "/")
-                    ? "opacity-100"
-                    : "group-hover:opacity-50"
-                )}
-              />
-            </Link>
+            {MANAGEMENT_NAV.map((item) => {
+              const isActive =
+                pathname === item.href || pathname.startsWith(item.href + "/");
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "group flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <span className="flex items-center gap-3">
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {item.label}
+                  </span>
+                  <ChevronRight
+                    className={cn(
+                      "h-4 w-4 shrink-0 opacity-0 transition-opacity",
+                      isActive ? "opacity-100" : "group-hover:opacity-50"
+                    )}
+                  />
+                </Link>
+              );
+            })}
           </>
         )}
       </nav>

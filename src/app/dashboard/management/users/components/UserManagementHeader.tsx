@@ -2,20 +2,18 @@
 
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw } from "lucide-react";
-import Link from "next/link";
+import { RefreshCw, UserPlus } from "lucide-react";
 
 const transition = { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const };
 
-const NO_PERMISSION_TITLE = "You don't have permission to perform this action. Contact an administrator if you need access.";
-
-interface StocksHeaderProps {
+interface UserManagementHeaderProps {
   onRefresh: () => void;
-  /** When false, Add new stock is shown but disabled. */
-  canManageStock?: boolean;
+  onOnboardAdmin?: () => void;
+  /** When false, Onboard admin is shown but disabled (manage user permission required). */
+  canManageUsers?: boolean;
 }
 
-export function StocksHeader({ onRefresh, canManageStock = true }: StocksHeaderProps) {
+export function UserManagementHeader({ onRefresh, onOnboardAdmin, canManageUsers = true }: UserManagementHeaderProps) {
   return (
     <motion.div
       className="border-b border-border bg-card"
@@ -27,10 +25,10 @@ export function StocksHeader({ onRefresh, canManageStock = true }: StocksHeaderP
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Stocks
+              User management
             </h1>
             <p className="mt-0.5 text-muted-foreground">
-              Master product catalog. Add products here, then use them in consignments.
+              View and manage users, roles, and status.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -43,22 +41,16 @@ export function StocksHeader({ onRefresh, canManageStock = true }: StocksHeaderP
               <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
-            {canManageStock ? (
-              <Button size="sm" className="gap-2 shadow-md shadow-primary/20 hover:shadow-primary/30" asChild>
-                <Link href="/dashboard/stocks/new">
-                  <Plus className="h-4 w-4" />
-                  Add new stock
-                </Link>
-              </Button>
-            ) : (
+            {onOnboardAdmin !== undefined && (
               <Button
                 size="sm"
-                className="gap-2 shadow-md cursor-not-allowed"
-                disabled
-                title={NO_PERMISSION_TITLE}
+                className="gap-2"
+                onClick={onOnboardAdmin}
+                disabled={!canManageUsers}
+                title={!canManageUsers ? "You don't have permission to perform this action. Contact an administrator if you need access." : undefined}
               >
-                <Plus className="h-4 w-4" />
-                Add new stock
+                <UserPlus className="h-4 w-4" />
+                Onboard admin
               </Button>
             )}
           </div>

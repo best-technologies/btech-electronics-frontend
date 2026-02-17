@@ -45,7 +45,7 @@ Content-Type: application/json
 
 | Section | Field | Type | Required | Description |
 |---------|-------|------|----------|-------------|
-| **Reference** | referenceNumber | string | yes | Unique reference (e.g. CONS-2025-001) |
+| **Reference** | referenceNumber | string | no | Optional. Omit to auto-generate (e.g. CONS-2025-001, CONS-2025-002). Must be unique if provided. |
 | | supplierName | string | yes | Manufacturer/supplier name |
 | | supplierReference | string | no | Supplier reference |
 | **Sales person** | salesPersonName | string | no | Sales person name |
@@ -77,7 +77,8 @@ Content-Type: application/json
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| productName | string | yes | Product/item name |
+| productId | string | no | Select from stock (`GET /distribution/stock/search?q=`); if set, productName/sku copied, stock incremented |
+| productName | string | yes* | Product name (*required when productId not set) |
 | cartons | number | yes | Number of cartons |
 | quantity | number | yes | Quantity |
 | unit | string | no | Unit (default: "pieces") |
@@ -216,7 +217,8 @@ Add a single item. **Backend computes `totalCost` from `quantity × unitPrice`**
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| productName | string | yes | Product/item name |
+| productId | string | no | Select from stock; if set, productName/sku copied, stock incremented |
+| productName | string | yes* | Required when productId not set |
 | cartons | number | yes | Number of cartons |
 | quantity | number | yes | Quantity |
 | unitPrice | number | yes | Unit price |
@@ -356,7 +358,54 @@ Remove an item. **Backend recalculates consignment totals** after deletion.
 
 ---
 
-### 5. List Consignments (Paginated with Analysis)
+### 5. Update consignment status
+
+```
+PATCH /distribution/consignment/:id/status
+```
+
+Change consignment status. **Stock is updated automatically:**
+
+- **Status set to `received`:** Product stock is **increased** for every item that has a `productId` (and a `StockMovement` with type `consignment_in` is recorded). `receivedAt` is set to now if not already set.
+- **Status set to `pending`** (from `received`): Product stock is **reduced** for every item with a `productId` (and a `StockMovement` with type `consignment_revert` is recorded). Fails with 400 if any product would go below zero. `receivedAt` is set to `null`.
+- **Any other status** (`inspected`, `available`, `partial_out`, `closed`): Only the status (and optionally `receivedAt`) is updated; no stock change.
+
+**Payload:**
+
+| Field  | Type   | Required | Description                          |
+|--------|--------|----------|--------------------------------------|
+| status | string | yes      | One of: `pending`, `received`, `inspected`, `available`, `partial_out`, `closed` |
+
+**Example (mark as received):**
+```json
+{ "status": "received" }
+```
+
+**Example (revert to pending):**
+```json
+{ "status": "pending" }
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Consignment status updated",
+  "data": {
+    "id": "clabc...",
+    "referenceNumber": "CONS-2025-001",
+    "status": "received",
+    "receivedAt": "2025-02-17T12:00:00.000Z",
+    "items": [...],
+    "receivedBy": { "id": "...", "first_name": "...", "last_name": "...", "email": "..." }
+  },
+  "statusCode": 200
+}
+```
+
+---
+
+### 6. List Consignments (Paginated with Analysis)
 
 ```
 GET /distribution/consignment
@@ -462,7 +511,7 @@ GET /distribution/consignment?fromDate=2025-02-01&toDate=2025-02-28&sortBy=overa
 
 ---
 
-### 6. Get Consignment by ID
+### 7. Get Consignment by ID
 
 ```
 GET /distribution/consignment/:id
@@ -551,5 +600,5 @@ GET /distribution/consignment/:id
 - **Create consignment:** `items` is optional. Omit or pass `[]` for the two-step flow.
 - **Add item:** Backend computes `totalCost = quantity × unitPrice` and updates consignment totals.
 - **Update/delete item:** Backend recalculates `overallTotalCartons`, `overallTotalQuantity`, `overallTotalCost` after every change.
-- **referenceNumber** must be unique.
+- **referenceNumber** is auto-generated (CONS-YYYY-NNN) if omitted; if provided, must be unique.
 - **invoiceNumber** must be unique when provided.

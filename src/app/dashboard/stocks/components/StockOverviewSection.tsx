@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "motion/react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import type { StockListAnalysis } from "@/lib/api";
@@ -13,6 +14,8 @@ import {
   AlertTriangle,
   PackageX,
   FolderTree,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 
 const transition = { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const };
@@ -67,9 +70,11 @@ const STAT_CARDS = [
 ] as const;
 
 export function StockOverviewSection({ analysis }: StockOverviewSectionProps) {
+  const [byCategoryOpen, setByCategoryOpen] = useState(false);
+
   return (
     <motion.section
-      className="space-y-6"
+      className="space-y-4"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ ...transition, delay: 0.05 }}
@@ -119,36 +124,57 @@ export function StockOverviewSection({ analysis }: StockOverviewSectionProps) {
           transition={{ ...transition, delay: 0.25 }}
           className="rounded-xl border border-border overflow-hidden bg-card shadow-sm"
         >
-          <div className="border-b border-border bg-muted/40 px-5 py-3">
+          <button
+            type="button"
+            onClick={() => setByCategoryOpen((o) => !o)}
+            className="w-full flex items-center justify-between gap-2 border-b border-border bg-muted/40 px-5 py-3 text-left hover:bg-muted/60 transition-colors"
+          >
             <div className="flex items-center gap-2">
               <FolderTree className="h-4 w-4 text-muted-foreground" />
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 By category
               </p>
             </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/30">
-                <tr>
-                  <th className="text-left font-medium p-4 text-muted-foreground">Category</th>
-                  <th className="text-right font-medium p-4 text-muted-foreground">Count</th>
-                  <th className="text-right font-medium p-4 text-muted-foreground">Quantity</th>
-                  <th className="text-right font-medium p-4 text-muted-foreground whitespace-nowrap">Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {analysis.byCategory.map((row, i) => (
-                  <tr key={i} className="border-t border-border/60 transition-colors hover:bg-muted/20">
-                    <td className="p-4 font-medium">{row.category ?? "Uncategorized"}</td>
-                    <td className="p-4 text-right tabular-nums">{row.count}</td>
-                    <td className="p-4 text-right tabular-nums">{row.quantity}</td>
-                    <td className="p-4 text-right tabular-nums font-medium whitespace-nowrap">{formatCurrency(row.value)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+            {byCategoryOpen ? (
+              <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+            ) : (
+              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+            )}
+          </button>
+          <AnimatePresence>
+            {byCategoryOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={transition}
+                className="overflow-hidden"
+              >
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/30">
+                      <tr>
+                        <th className="text-left font-medium p-4 text-muted-foreground">Category</th>
+                        <th className="text-right font-medium p-4 text-muted-foreground">Count</th>
+                        <th className="text-right font-medium p-4 text-muted-foreground">Quantity</th>
+                        <th className="text-right font-medium p-4 text-muted-foreground whitespace-nowrap">Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analysis.byCategory.map((row, i) => (
+                        <tr key={i} className="border-t border-border/60 transition-colors hover:bg-muted/20">
+                          <td className="p-4 font-medium">{row.category ?? "Uncategorized"}</td>
+                          <td className="p-4 text-right tabular-nums">{row.count}</td>
+                          <td className="p-4 text-right tabular-nums">{row.quantity}</td>
+                          <td className="p-4 text-right tabular-nums font-medium whitespace-nowrap">{formatCurrency(row.value)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
     </motion.section>

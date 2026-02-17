@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore, selectHasHydrated } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import {
@@ -25,18 +25,20 @@ export default function ProfilePage() {
   const router = useRouter();
   const userProfile = useAuthStore((s) => s.userProfile);
   const accessToken = useAuthStore((s) => s.accessToken);
+  const hasHydrated = useAuthStore(selectHasHydrated);
 
   useEffect(() => {
     document.title = "Profile";
   }, []);
 
   useEffect(() => {
+    if (!hasHydrated) return;
     if (!accessToken) {
-      router.replace("/sign-in");
+      router.replace("/");
     }
-  }, [accessToken, router]);
+  }, [hasHydrated, accessToken, router]);
 
-  if (!accessToken) return null;
+  if (!hasHydrated || !accessToken) return null;
 
   const fullName = formatFullName(
     userProfile?.first_name,
