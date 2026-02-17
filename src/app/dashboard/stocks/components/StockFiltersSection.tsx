@@ -16,6 +16,8 @@ const SORT_OPTIONS: { value: StockSortBy; label: string }[] = [
   { value: "sku", label: "SKU" },
   { value: "currentStock", label: "Current stock" },
   { value: "costPrice", label: "Cost price" },
+  { value: "wholesalePrice", label: "Wholesale price" },
+  { value: "retailPrice", label: "Retail price" },
   { value: "category", label: "Category" },
 ];
 

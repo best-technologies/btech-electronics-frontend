@@ -18,13 +18,18 @@ import { Card } from "@/components/ui/card";
 import { ProductSearchSelect } from "@/components/ProductSearchSelect";
 import { ArrowLeft, ChevronDown, ChevronUp, Plus, MoreHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
 
-const defaultItem: ConsignmentItemPayload = {
+/** Form state for a line item (productId comes from selected product when submitting). */
+type ConsignmentItemForm = Omit<ConsignmentItemPayload, "productId">;
+
+const defaultItem: ConsignmentItemForm = {
   productName: "",
   cartons: 0,
   quantity: 0,
   unit: "pieces",
   unitPrice: 0,
   totalCost: 0,
+  wholesalePrice: undefined,
+  retailPrice: undefined,
 };
 
 function computeTotalCost(quantity: number, unitPrice: number): number {
@@ -60,7 +65,7 @@ export default function NewConsignmentPage() {
   const [receivedAt, setReceivedAt] = useState("");
   const [warehouseLocation, setWarehouseLocation] = useState("");
   const [notes, setNotes] = useState("");
-  const [items, setItems] = useState<ConsignmentItemPayload[]>([{ ...defaultItem }]);
+  const [items, setItems] = useState<ConsignmentItemForm[]>([{ ...defaultItem }]);
   const [showPayment, setShowPayment] = useState(false);
   const [showOther, setShowOther] = useState(false);
   const [expandedItemOptions, setExpandedItemOptions] = useState<Record<number, boolean>>({});
@@ -108,7 +113,7 @@ export default function NewConsignmentPage() {
   }, []);
 
   const updateItem = useCallback(
-    (index: number, field: keyof ConsignmentItemPayload, value: string | number) => {
+    (index: number, field: keyof ConsignmentItemForm, value: string | number | undefined) => {
       setItems((prev) => {
         const next = prev.map((item, i) =>
           i === index ? { ...item, [field]: value } : item
@@ -130,7 +135,7 @@ export default function NewConsignmentPage() {
       const next = prev.map((item, i) => {
         if (i !== index) return item;
         if (!product) {
-          return { ...item, productName: "", unit: "pieces", unitPrice: 0, totalCost: 0, sku: undefined };
+          return { ...item, productName: "", unit: "pieces", unitPrice: 0, totalCost: 0, sku: undefined, wholesalePrice: undefined, retailPrice: undefined };
         }
         const unitPrice = product.costPrice ?? 0;
         const qty = Number(item.quantity) || 0;
@@ -140,6 +145,8 @@ export default function NewConsignmentPage() {
           unit: product.unit || "pieces",
           unitPrice,
           totalCost: computeTotalCost(qty, unitPrice),
+          wholesalePrice: product.wholesalePrice ?? undefined,
+          retailPrice: product.retailPrice ?? undefined,
           sku: product.sku ?? undefined,
         };
       });
@@ -151,26 +158,35 @@ export default function NewConsignmentPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const validItems = items
+    const validItems: ConsignmentItemPayload[] = items
+      .map((item, index) => ({
+        item,
+        index,
+        productId: selectedProductForItem[index]?.id,
+      }))
       .filter(
-        (i) =>
-          i.productName.trim() &&
-          i.cartons >= 0 &&
-          i.quantity > 0 &&
-          i.unitPrice >= 0
+        ({ item, productId }) =>
+          item.productName.trim() &&
+          productId &&
+          item.cartons >= 0 &&
+          item.quantity > 0 &&
+          item.unitPrice >= 0
       )
-      .map((i) => ({
-        productName: i.productName.trim(),
-        cartons: Number(i.cartons),
-        quantity: Number(i.quantity),
-        unit: (i.unit as string) || "pieces",
-        unitPrice: Number(i.unitPrice),
-        totalCost: Number(i.totalCost) || computeTotalCost(Number(i.quantity), Number(i.unitPrice)),
-        sku: i.sku?.toString().trim() || undefined,
-        description: i.description?.toString().trim() || undefined,
-        brand: i.brand?.toString().trim() || undefined,
-        model: i.model?.toString().trim() || undefined,
-        condition: i.condition?.toString().trim() || undefined,
+      .map(({ item, productId }) => ({
+        productId: productId!,
+        productName: item.productName.trim(),
+        cartons: Number(item.cartons),
+        quantity: Number(item.quantity),
+        unit: (item.unit as string) || "pieces",
+        unitPrice: Number(item.unitPrice),
+        totalCost: Number(item.totalCost) || computeTotalCost(Number(item.quantity), Number(item.unitPrice)),
+        wholesalePrice: item.wholesalePrice != null ? Number(item.wholesalePrice) : undefined,
+        retailPrice: item.retailPrice != null ? Number(item.retailPrice) : undefined,
+        sku: item.sku?.toString().trim() || undefined,
+        description: item.description?.toString().trim() || undefined,
+        brand: item.brand?.toString().trim() || undefined,
+        model: item.model?.toString().trim() || undefined,
+        condition: item.condition?.toString().trim() || undefined,
       }));
 
     const payload: CreateConsignmentPayload = {
@@ -213,10 +229,12 @@ export default function NewConsignmentPage() {
 
   const canSubmit =
     supplierName.trim() !== "" &&
-    items.every((item) => {
+    items.every((item, index) => {
       const hasProduct = item.productName.trim() !== "";
       if (!hasProduct) return true;
+      const hasSelectedProduct = !!selectedProductForItem[index]?.id;
       return (
+        hasSelectedProduct &&
         Number(item.quantity) > 0 &&
         Number(item.unitPrice) >= 0 &&
         Number(item.cartons) >= 0
@@ -476,8 +494,16 @@ export default function NewConsignmentPage() {
                           <Input type="number" min={1} value={item.quantity || ""} onChange={(e) => updateItem(index, "quantity", e.target.value ? Number(e.target.value) : 0)} className="mt-1.5 h-10 bg-background" />
                         </div>
                         <div>
-                          <Label className="text-sm text-muted-foreground">Wholesale Price <span className="text-destructive" aria-hidden="true">*</span></Label>
+                          <Label className="text-sm text-muted-foreground">Unit price (cost) <span className="text-destructive" aria-hidden="true">*</span></Label>
                           <Input type="number" step="0.01" min={0} value={item.unitPrice || ""} onChange={(e) => updateItem(index, "unitPrice", e.target.value ? Number(e.target.value) : 0)} className="mt-1.5 h-10 bg-background" />
+                        </div>
+                        <div>
+                          <Label className="text-sm text-muted-foreground">Wholesale price</Label>
+                          <Input type="number" step="0.01" min={0} value={item.wholesalePrice ?? ""} onChange={(e) => updateItem(index, "wholesalePrice", e.target.value ? Number(e.target.value) : undefined)} className="mt-1.5 h-10 bg-background" placeholder="0.00" />
+                        </div>
+                        <div>
+                          <Label className="text-sm text-muted-foreground">Retail price</Label>
+                          <Input type="number" step="0.01" min={0} value={item.retailPrice ?? ""} onChange={(e) => updateItem(index, "retailPrice", e.target.value ? Number(e.target.value) : undefined)} className="mt-1.5 h-10 bg-background" placeholder="0.00" />
                         </div>
                         <div>
                           <Label className="text-sm text-muted-foreground">Total</Label>

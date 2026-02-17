@@ -262,7 +262,9 @@ export function ProductSearchSelect({
                   <span className="font-medium truncate">{product.name}</span>
                   <span className="text-xs text-muted-foreground">
                     {product.sku}
-                    {product.costPrice != null ? ` · ₦${Number(product.costPrice).toLocaleString()}` : ""}
+                    {product.costPrice != null ? ` · Cost ₦${Number(product.costPrice).toLocaleString()}` : ""}
+                    {product.wholesalePrice != null ? ` · Wholesale ₦${Number(product.wholesalePrice).toLocaleString()}` : ""}
+                    {product.retailPrice != null ? ` · Retail ₦${Number(product.retailPrice).toLocaleString()}` : ""}
                     {product.currentStock != null ? ` · ${product.currentStock} in stock` : ""}
                   </span>
                 </div>

@@ -3,28 +3,34 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuthStore, selectHasManageInvoice } from "@/stores/authStore";
+import { useAuthStore, selectHasManageInvoice, selectHasManageStock } from "@/stores/authStore";
 import {
   invoiceApi,
-  stockApi,
   type CreateInvoicePayload,
   type CreateInvoiceItemPayload,
-  type StockProduct,
+  type StockSearchItem,
 } from "@/lib/api";
 import { useMutation } from "@/hooks/useMutation";
-import { useQuery } from "@/hooks/useQuery";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { ProductSearchSelect } from "@/components/ProductSearchSelect";
 import { ArrowLeft, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
 const DEFAULT_COMPANY_ADDRESS = "121/123, Obafemi Awolowo Way, Oke-Ado, Ibadan";
 const DEFAULT_COMPANY_PHONE = "08038086862, 08174615808";
 
+type InvoicePriceType = "wholesale" | "retail";
+
 interface LineItemRow extends CreateInvoiceItemPayload {
   id: string;
+  /** Which product price to use for this line (only when product is from catalog). */
+  priceType?: InvoicePriceType;
+  /** Stored from product at selection time so we can switch wholesale/retail. */
+  productWholesalePrice?: number | null;
+  productRetailPrice?: number | null;
 }
 
 function getDefaultDueDate(issueDate: string): string {
@@ -59,12 +65,7 @@ export default function NewInvoicePage() {
     { id: "1", description: "", quantity: 1, unit: "pieces", unitPrice: 0, totalAmount: 0 },
   ]);
 
-  const { data: stockList } = useQuery({
-    queryKey: "stock-list-invoice-new",
-    queryFn: () => stockApi.list(accessToken!, { limit: 500 }),
-    enabled: !!accessToken,
-  });
-  const products: StockProduct[] = stockList?.items ?? [];
+  const canManageStock = useAuthStore(selectHasManageStock);
 
   const mutation = useMutation({
     mutationFn: (payload: CreateInvoicePayload) =>
@@ -114,6 +115,9 @@ export default function NewInvoicePage() {
     ]);
   }
 
+  const hasPriceChoice = (row: LineItemRow) =>
+    row.productId && (row.productWholesalePrice != null || row.productRetailPrice != null);
+
   function removeLineItem(id: string) {
     setLineItems((prev) => (prev.length > 1 ? prev.filter((r) => r.id !== id) : prev));
   }
@@ -137,7 +141,31 @@ export default function NewInvoicePage() {
     );
   }
 
-  function selectProduct(id: string, product: StockProduct) {
+  function selectProduct(id: string, product: StockSearchItem | null) {
+    if (!product) {
+      setLineItems((prev) =>
+        prev.map((row) => {
+          if (row.id !== id) return row;
+          return {
+            ...row,
+            description: "",
+            productId: undefined,
+            unit: "pieces",
+            unitPrice: 0,
+            totalAmount: 0,
+            priceType: undefined,
+            productWholesalePrice: undefined,
+            productRetailPrice: undefined,
+          };
+        })
+      );
+      return;
+    }
+    const wholesale = product.wholesalePrice ?? product.retailPrice ?? null;
+    const retail = product.retailPrice ?? product.wholesalePrice ?? null;
+    const defaultType: InvoicePriceType = retail != null ? "retail" : "wholesale";
+    const defaultPrice = defaultType === "retail" ? (retail ?? wholesale ?? product.costPrice ?? 0) : (wholesale ?? retail ?? product.costPrice ?? 0);
+    const qty = lineItems.find((r) => r.id === id)?.quantity ?? 1;
     setLineItems((prev) =>
       prev.map((row) => {
         if (row.id !== id) return row;
@@ -146,8 +174,29 @@ export default function NewInvoicePage() {
           description: product.name,
           productId: product.id,
           unit: product.unit || "pieces",
-          unitPrice: product.costPrice ?? 0,
-          totalAmount: (row.quantity || 1) * (product.costPrice ?? 0),
+          unitPrice: defaultPrice,
+          totalAmount: qty * defaultPrice,
+          priceType: defaultType,
+          productWholesalePrice: product.wholesalePrice ?? null,
+          productRetailPrice: product.retailPrice ?? null,
+        };
+      })
+    );
+  }
+
+  function setLinePriceType(id: string, priceType: InvoicePriceType) {
+    setLineItems((prev) =>
+      prev.map((row) => {
+        if (row.id !== id) return row;
+        const price =
+          priceType === "retail"
+            ? (row.productRetailPrice ?? row.productWholesalePrice ?? 0)
+            : (row.productWholesalePrice ?? row.productRetailPrice ?? 0);
+        return {
+          ...row,
+          priceType,
+          unitPrice: price,
+          totalAmount: (row.quantity || 1) * price,
         };
       })
     );
@@ -323,10 +372,10 @@ export default function NewInvoicePage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-border bg-muted/20">
-                        <th className="text-left font-medium py-2.5 px-3 text-muted-foreground w-[28%]">Description</th>
-                        <th className="text-left font-medium py-2.5 px-3 text-muted-foreground w-[18%]">From stock</th>
+                        <th className="text-left font-medium py-2.5 px-3 text-muted-foreground min-w-[200px]">Product</th>
                         <th className="text-right font-medium py-2.5 px-3 text-muted-foreground w-[10%]">Qty</th>
                         <th className="text-left font-medium py-2.5 px-3 text-muted-foreground w-[12%]">Unit</th>
+                        <th className="text-left font-medium py-2.5 px-3 text-muted-foreground w-[18%]">Price type</th>
                         <th className="text-right font-medium py-2.5 px-3 text-muted-foreground w-[14%]">Price</th>
                         <th className="text-right font-medium py-2.5 px-3 text-muted-foreground w-[12%]">Total</th>
                         <th className="w-9" />
@@ -335,33 +384,17 @@ export default function NewInvoicePage() {
                     <tbody>
                       {lineItems.map((row) => (
                         <tr key={row.id} className="border-b border-border/60 hover:bg-muted/20">
-                          <td className="px-3 py-2">
-                            <Input
+                          <td className="px-3 py-2 align-top">
+                            <ProductSearchSelect
+                              accessToken={accessToken}
                               value={row.description}
-                              onChange={(e) => updateLineItem(row.id, "description", e.target.value)}
-                              placeholder="Item description"
-                              className="h-8 rounded-md border-0 bg-transparent focus-visible:ring-1 text-sm"
+                              onSelect={(p) => selectProduct(row.id, p)}
+                              placeholder="Search by name or SKU…"
+                              id={`invoice-item-product-${row.id}`}
+                              className="min-w-[200px]"
+                              addNewProductHref="/dashboard/stocks/new"
+                              canAddNewProduct={canManageStock}
                             />
-                          </td>
-                          <td className="px-3 py-2">
-                            {products.length > 0 ? (
-                              <select
-                                value={row.productId ?? ""}
-                                onChange={(e) => {
-                                  const id = e.target.value;
-                                  const product = products.find((p) => p.id === id);
-                                  if (product) selectProduct(row.id, product);
-                                }}
-                                className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs"
-                              >
-                                <option value="">—</option>
-                                {products.map((p) => (
-                                  <option key={p.id} value={p.id}>{p.sku}</option>
-                                ))}
-                              </select>
-                            ) : (
-                              <span className="text-muted-foreground text-xs">—</span>
-                            )}
                           </td>
                           <td className="px-3 py-2 text-right">
                             <Input
@@ -378,6 +411,25 @@ export default function NewInvoicePage() {
                               onChange={(e) => updateLineItem(row.id, "unit", e.target.value)}
                               className="h-8 w-20 rounded-md border-0 bg-transparent focus-visible:ring-1 text-sm"
                             />
+                          </td>
+                          <td className="px-3 py-2">
+                            {hasPriceChoice(row) ? (
+                              <select
+                                value={row.priceType ?? "retail"}
+                                onChange={(e) => setLinePriceType(row.id, e.target.value as InvoicePriceType)}
+                                className="h-8 w-full min-w-[100px] rounded-md border border-input bg-background px-2 text-xs text-foreground"
+                                aria-label="Use wholesale or retail price"
+                              >
+                                {row.productWholesalePrice != null && (
+                                  <option value="wholesale">Wholesale</option>
+                                )}
+                                {row.productRetailPrice != null && (
+                                  <option value="retail">Retail</option>
+                                )}
+                              </select>
+                            ) : (
+                              <span className="text-muted-foreground text-xs">—</span>
+                            )}
                           </td>
                           <td className="px-3 py-2 text-right">
                             <Input

@@ -24,6 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus, Pencil, Trash2 } from "lucide-react";
 
 const emptyAddItem: AddConsignmentItemPayload = {
+  productId: "",
   productName: "",
   cartons: 0,
   quantity: 0,
@@ -54,7 +55,9 @@ export default function ConsignmentDetailPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [statusConfirmOpen, setStatusConfirmOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<ConsignmentStatus | null>(null);
+  const [unlinkedWarningOpen, setUnlinkedWarningOpen] = useState(false);
   const [addFormSelectedProduct, setAddFormSelectedProduct] = useState<StockSearchItem | null>(null);
+  const [editFormSelectedProduct, setEditFormSelectedProduct] = useState<StockSearchItem | null>(null);
 
   const queryKey = `consignment-${id}`;
   const { data: consignment, isLoading, isError, error, refetch } = useQuery({
@@ -81,6 +84,7 @@ export default function ConsignmentDetailPage() {
     onSuccess: () => {
       setEditingItemId(null);
       setEditForm({});
+      setEditFormSelectedProduct(null);
       refetch();
     },
   });
@@ -106,12 +110,15 @@ export default function ConsignmentDetailPage() {
 
   const startEdit = useCallback((item: ConsignmentItem) => {
     setEditingItemId(item.id);
+    setEditFormSelectedProduct(null);
     setEditForm({
       productName: item.productName,
       cartons: item.cartons,
       quantity: item.quantity,
       unitPrice: item.unitPrice,
       unit: item.unit,
+      wholesalePrice: item.wholesalePrice ?? undefined,
+      retailPrice: item.retailPrice ?? undefined,
       sku: item.sku ?? undefined,
       description: item.description ?? undefined,
       brand: item.brand ?? undefined,
@@ -122,12 +129,18 @@ export default function ConsignmentDetailPage() {
   const cancelEdit = useCallback(() => {
     setEditingItemId(null);
     setEditForm({});
+    setEditFormSelectedProduct(null);
   }, []);
 
   const handleStatusChange = useCallback(
-    (newStatus: ConsignmentStatus, currentStatus: ConsignmentStatus) => {
+    (newStatus: ConsignmentStatus, currentStatus: ConsignmentStatus, items: ConsignmentItem[]) => {
       if (newStatus === currentStatus) return;
       if (newStatus === "received" && currentStatus === "pending") {
+        const allLinked = items.length > 0 && items.every((i) => i.productId);
+        if (!allLinked) {
+          setUnlinkedWarningOpen(true);
+          return;
+        }
         setPendingStatus("received");
         setStatusConfirmOpen(true);
         return;
@@ -145,14 +158,17 @@ export default function ConsignmentDetailPage() {
 
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!addForm.productName.trim() || addForm.quantity <= 0 || addForm.unitPrice < 0) return;
+    const productId = addFormSelectedProduct?.id;
+    if (!productId || !addForm.productName.trim() || addForm.quantity <= 0 || addForm.unitPrice < 0) return;
     addItemMutation.mutateAsync({
-      ...addForm,
+      productId,
       productName: addForm.productName.trim(),
       cartons: Number(addForm.cartons),
       quantity: Number(addForm.quantity),
       unitPrice: Number(addForm.unitPrice),
       unit: addForm.unit?.trim() || "pieces",
+      wholesalePrice: addForm.wholesalePrice != null ? Number(addForm.wholesalePrice) : undefined,
+      retailPrice: addForm.retailPrice != null ? Number(addForm.retailPrice) : undefined,
       sku: addForm.sku?.trim() || undefined,
       description: addForm.description?.trim() || undefined,
       brand: addForm.brand?.trim() || undefined,
@@ -165,11 +181,14 @@ export default function ConsignmentDetailPage() {
     e.preventDefault();
     if (!editingItemId) return;
     const payload: UpdateConsignmentItemPayload = {};
+    if (editFormSelectedProduct?.id) payload.productId = editFormSelectedProduct.id;
     if (editForm.productName !== undefined) payload.productName = editForm.productName.trim();
     if (editForm.cartons !== undefined) payload.cartons = Number(editForm.cartons);
     if (editForm.quantity !== undefined) payload.quantity = Number(editForm.quantity);
     if (editForm.unitPrice !== undefined) payload.unitPrice = Number(editForm.unitPrice);
     if (editForm.unit !== undefined) payload.unit = editForm.unit;
+    if (editForm.wholesalePrice !== undefined) payload.wholesalePrice = Number(editForm.wholesalePrice);
+    if (editForm.retailPrice !== undefined) payload.retailPrice = Number(editForm.retailPrice);
     if (editForm.sku !== undefined) payload.sku = editForm.sku.trim() || undefined;
     if (editForm.description !== undefined) payload.description = editForm.description.trim() || undefined;
     if (editForm.brand !== undefined) payload.brand = editForm.brand.trim() || undefined;
@@ -231,7 +250,7 @@ export default function ConsignmentDetailPage() {
               {canManageConsignment ? (
                 <select
                   value={c.status}
-                  onChange={(e) => handleStatusChange(e.target.value as ConsignmentStatus, c.status)}
+                  onChange={(e) => handleStatusChange(e.target.value as ConsignmentStatus, c.status, items)}
                   disabled={updateStatusMutation.isPending}
                   className="rounded-md border border-input bg-background px-2 py-1 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 >
@@ -255,6 +274,25 @@ export default function ConsignmentDetailPage() {
           </div>
         </CardHeader>
       </Card>
+
+      {/* Warning: items not linked to catalog — cannot mark as delivered */}
+      {unlinkedWarningOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" aria-modal="true" role="dialog">
+          <Card className="w-full max-w-md border-amber-500/50 bg-card shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-lg">Cannot mark as delivered</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                {items.filter((i) => !i.productId).length} item(s) are not linked to the stock catalog (their line has no catalog product link). The product may already exist in Stocks—edit each item and use <strong>Link to product</strong> to select it so stock is updated when you mark as delivered.
+              </p>
+            </CardHeader>
+            <CardContent className="flex justify-end gap-2 pt-0">
+              <Button variant="outline" onClick={() => setUnlinkedWarningOpen(false)}>
+                OK
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Warning when marking as received (delivered) — cannot be reverted */}
       {statusConfirmOpen && (
@@ -298,7 +336,9 @@ export default function ConsignmentDetailPage() {
                   <th className="text-right font-medium p-3">Cartons</th>
                   <th className="text-right font-medium p-3">Qty</th>
                   <th className="text-left font-medium p-3">Unit</th>
-                  <th className="text-right font-medium p-3">Wholesale Price</th>
+                  <th className="text-right font-medium p-3">Unit price (cost)</th>
+                  <th className="text-right font-medium p-3">Wholesale price</th>
+                  <th className="text-right font-medium p-3">Retail price</th>
                   <th className="text-right font-medium p-3">Total cost</th>
                   <th className="w-28 p-2">Actions</th>
                 </tr>
@@ -308,9 +348,25 @@ export default function ConsignmentDetailPage() {
                   <tr key={item.id} className="border-t border-border">
                     {editingItemId === item.id ? (
                       <>
-                        <td colSpan={7} className="p-3 bg-muted/20">
-                          <form onSubmit={handleUpdateItem} className="flex flex-wrap items-end gap-3">
-                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                        <td colSpan={9} className="p-3 bg-muted/20">
+                          <form onSubmit={handleUpdateItem} className="space-y-3">
+                            <div className="space-y-1">
+                              <Label className="text-xs">Link to product (for stock updates)</Label>
+                              <ProductSearchSelect
+                                accessToken={accessToken}
+                                value={editFormSelectedProduct?.name ?? ""}
+                                onSelect={(p) => setEditFormSelectedProduct(p)}
+                                placeholder="Search by name or SKU…"
+                                id={`edit-item-product-${item.id}`}
+                                className="max-w-sm"
+                                addNewProductHref="/dashboard/stocks/new"
+                                canAddNewProduct={canManageStock}
+                              />
+                              {item.productId && !editFormSelectedProduct && (
+                                <p className="text-xs text-muted-foreground">Currently linked to catalog. Select a product above to change.</p>
+                              )}
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
                               <div className="space-y-1">
                                 <Label className="text-xs">Product</Label>
                                 <Input
@@ -340,13 +396,37 @@ export default function ConsignmentDetailPage() {
                                 />
                               </div>
                               <div className="space-y-1">
-                                <Label className="text-xs">Wholesale Price</Label>
+                                <Label className="text-xs">Unit price (cost)</Label>
                                 <Input
                                   type="number"
                                   step="0.01"
                                   value={editForm.unitPrice ?? ""}
                                   onChange={(e) => setEditForm((f) => ({ ...f, unitPrice: Number(e.target.value) || 0 }))}
                                   className="h-8"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Wholesale price</Label>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min={0}
+                                  value={editForm.wholesalePrice ?? ""}
+                                  onChange={(e) => setEditForm((f) => ({ ...f, wholesalePrice: e.target.value ? Number(e.target.value) : undefined }))}
+                                  className="h-8"
+                                  placeholder="—"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Retail price</Label>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min={0}
+                                  value={editForm.retailPrice ?? ""}
+                                  onChange={(e) => setEditForm((f) => ({ ...f, retailPrice: e.target.value ? Number(e.target.value) : undefined }))}
+                                  className="h-8"
+                                  placeholder="—"
                                 />
                               </div>
                               <div className="space-y-1">
@@ -358,18 +438,32 @@ export default function ConsignmentDetailPage() {
                                 />
                               </div>
                             </div>
-                            <Button type="submit" size="sm" disabled={!canManageConsignment || updateItemMutation.isPending}>Save</Button>
-                            <Button type="button" size="sm" variant="ghost" onClick={cancelEdit}>Cancel</Button>
+                            <div className="flex items-center gap-2">
+                              <Button type="submit" size="sm" disabled={!canManageConsignment || updateItemMutation.isPending}>Save</Button>
+                              <Button type="button" size="sm" variant="ghost" onClick={cancelEdit}>Cancel</Button>
+                            </div>
                           </form>
                         </td>
                       </>
                     ) : (
                       <>
-                        <td className="p-3">{item.productName}</td>
+                        <td className="p-3">
+                          <span>{item.productName}</span>
+                          {!item.productId && (
+                            <span
+                              className="ml-1.5 text-xs text-amber-600 dark:text-amber-400"
+                              title="This line item is not linked to a product in the stock catalog. The product may exist in the catalog—edit this item and use 'Link to product' to select it so stock updates when you mark the consignment as delivered."
+                            >
+                              (not linked to catalog)
+                            </span>
+                          )}
+                        </td>
                         <td className="p-3 text-right">{item.cartons}</td>
                         <td className="p-3 text-right">{item.quantity}</td>
                         <td className="p-3">{item.unit ?? "—"}</td>
                         <td className="p-3 text-right">{formatCurrency(item.unitPrice)}</td>
+                        <td className="p-3 text-right">{item.wholesalePrice != null ? formatCurrency(item.wholesalePrice) : "—"}</td>
+                        <td className="p-3 text-right">{item.retailPrice != null ? formatCurrency(item.retailPrice) : "—"}</td>
                         <td className="p-3 text-right">{formatCurrency(item.totalCost)}</td>
                         <td className="p-2">
                           {deleteConfirmId === item.id ? (
@@ -440,6 +534,8 @@ export default function ConsignmentDetailPage() {
                       sku: p?.sku ?? f.sku ?? "",
                       unit: p?.unit ?? f.unit ?? "pieces",
                       unitPrice: p?.costPrice ?? f.unitPrice ?? 0,
+                      wholesalePrice: p?.wholesalePrice ?? undefined,
+                      retailPrice: p?.retailPrice ?? undefined,
                     }));
                   }}
                   placeholder="Search by name or SKU…"
@@ -469,7 +565,7 @@ export default function ConsignmentDetailPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="add-unitPrice">Wholesale Price *</Label>
+                <Label htmlFor="add-unitPrice">Unit price (cost) *</Label>
                 <Input
                   id="add-unitPrice"
                   type="number"
@@ -477,6 +573,30 @@ export default function ConsignmentDetailPage() {
                   min={0}
                   value={addForm.unitPrice || ""}
                   onChange={(e) => setAddForm((f) => ({ ...f, unitPrice: Number(e.target.value) || 0 }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="add-wholesalePrice">Wholesale price</Label>
+                <Input
+                  id="add-wholesalePrice"
+                  type="number"
+                  step="0.01"
+                  min={0}
+                  value={addForm.wholesalePrice ?? ""}
+                  onChange={(e) => setAddForm((f) => ({ ...f, wholesalePrice: e.target.value ? Number(e.target.value) : undefined }))}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="add-retailPrice">Retail price</Label>
+                <Input
+                  id="add-retailPrice"
+                  type="number"
+                  step="0.01"
+                  min={0}
+                  value={addForm.retailPrice ?? ""}
+                  onChange={(e) => setAddForm((f) => ({ ...f, retailPrice: e.target.value ? Number(e.target.value) : undefined }))}
+                  placeholder="0.00"
                 />
               </div>
               <div className="space-y-2">
@@ -496,7 +616,7 @@ export default function ConsignmentDetailPage() {
                 />
               </div>
             </div>
-            <Button type="submit" disabled={addItemMutation.isPending}>
+            <Button type="submit" disabled={!addFormSelectedProduct || addItemMutation.isPending}>
               {addItemMutation.isPending ? "Adding…" : "Add item"}
             </Button>
             {addItemMutation.isError && (

@@ -30,8 +30,8 @@ export interface StockProduct {
   unit: string;
   currentStock: number;
   costPrice: number | null;
-  normalSellingPrice: number | null;
-  discountedSellingPrice: number | null;
+  wholesalePrice: number | null;
+  retailPrice: number | null;
   reorderLevel: number | null;
   warehouseLocation: string | null;
   images: StockProductImage[] | null;
@@ -82,6 +82,8 @@ export type StockSortBy =
   | "sku"
   | "currentStock"
   | "costPrice"
+  | "wholesalePrice"
+  | "retailPrice"
   | "category";
 
 export type StockSortOrder = "asc" | "desc";
@@ -113,8 +115,8 @@ export interface CreateStockPayload {
   unit?: string;
   initialStock?: number;
   costPrice?: number;
-  normalSellingPrice?: number;
-  discountedSellingPrice?: number;
+  wholesalePrice?: number;
+  retailPrice?: number;
   reorderLevel?: number;
   warehouseLocation?: string;
   isActive?: boolean;
@@ -130,8 +132,8 @@ export interface UpdateStockPayload {
   category?: string;
   unit?: string;
   costPrice?: number;
-  normalSellingPrice?: number;
-  discountedSellingPrice?: number;
+  wholesalePrice?: number;
+  retailPrice?: number;
   reorderLevel?: number;
   warehouseLocation?: string;
   isActive?: boolean;
@@ -152,6 +154,8 @@ export interface StockSearchItem {
   currentStock: number;
   unit: string;
   costPrice: number | null;
+  wholesalePrice?: number | null;
+  retailPrice?: number | null;
   images?: StockProductImage[] | null;
 }
 
@@ -206,8 +210,8 @@ function buildCreateFormData(payload: CreateStockPayload, imageFiles?: File[]): 
   if (payload.unit != null && payload.unit !== "") form.set("unit", payload.unit);
   if (payload.initialStock != null) form.set("initialStock", String(payload.initialStock));
   if (payload.costPrice != null) form.set("costPrice", String(payload.costPrice));
-  if (payload.normalSellingPrice != null) form.set("normalSellingPrice", String(payload.normalSellingPrice));
-  if (payload.discountedSellingPrice != null) form.set("discountedSellingPrice", String(payload.discountedSellingPrice));
+  if (payload.wholesalePrice != null) form.set("wholesalePrice", String(payload.wholesalePrice));
+  if (payload.retailPrice != null) form.set("retailPrice", String(payload.retailPrice));
   if (payload.reorderLevel != null) form.set("reorderLevel", String(payload.reorderLevel));
   if (payload.warehouseLocation != null && payload.warehouseLocation !== "") form.set("warehouseLocation", payload.warehouseLocation);
   form.set("isActive", payload.isActive !== false ? "true" : "false");

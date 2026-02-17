@@ -14,6 +14,8 @@ import { unwrapBackendResponse } from "../backend-types";
 // Approach 1 (single-shot): send items array. Approach 2 (two-step): omit items or send [].
 
 export interface ConsignmentItemPayload {
+  /** Required. Select from stock catalog (GET /distribution/stock/search). */
+  productId: string;
   productName: string;
   cartons: number;
   quantity: number;
@@ -21,6 +23,8 @@ export interface ConsignmentItemPayload {
   unitPrice: number;
   /** Optional: backend computes as quantity × unitPrice if omitted */
   totalCost?: number;
+  wholesalePrice?: number;
+  retailPrice?: number;
   sku?: string;
   description?: string;
   brand?: string;
@@ -63,12 +67,16 @@ export interface CreateConsignmentPayload {
 
 export interface ConsignmentItem {
   id: string;
+  /** When set, item is linked to stock catalog and will update stock when consignment is marked received. */
+  productId?: string | null;
   productName: string;
   cartons: number;
   quantity: number;
   unit: string;
   unitPrice: number;
   totalCost: number;
+  wholesalePrice?: number | null;
+  retailPrice?: number | null;
   sku: string | null;
   description: string | null;
   brand: string | null;
@@ -250,11 +258,15 @@ async function deleteAndUnwrap<T>(path: string, config?: ApiRequestConfig): Prom
 
 /** Payload for POST .../consignment/:id/items. Backend computes totalCost. */
 export interface AddConsignmentItemPayload {
+  /** Required. Select from stock catalog (GET /distribution/stock/search). */
+  productId: string;
   productName: string;
   cartons: number;
   quantity: number;
   unitPrice: number;
   unit?: string;
+  wholesalePrice?: number;
+  retailPrice?: number;
   sku?: string;
   description?: string;
   brand?: string;
@@ -264,11 +276,15 @@ export interface AddConsignmentItemPayload {
 
 /** Payload for PATCH .../consignment/:id/items/:itemId. All optional. */
 export interface UpdateConsignmentItemPayload {
+  /** Link item to product from catalog (GET /distribution/stock/search). When set, backend fills productName/sku from product. */
+  productId?: string;
   productName?: string;
   cartons?: number;
   quantity?: number;
   unitPrice?: number;
   unit?: string;
+  wholesalePrice?: number;
+  retailPrice?: number;
   sku?: string;
   description?: string;
   brand?: string;

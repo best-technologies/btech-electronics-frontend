@@ -69,16 +69,19 @@ export function StockTable({ items }: StockTableProps) {
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr>
-                <th className="text-left font-medium p-4 text-muted-foreground w-16">Image</th>
+                <th className="text-left font-medium p-4 text-muted-foreground w-12">S/N</th>
                 <th className="text-left font-medium p-4 text-muted-foreground">SKU</th>
+                <th className="text-left font-medium p-4 text-muted-foreground w-16">Image</th>
                 <th className="text-left font-medium p-4 text-muted-foreground">Name</th>
                 <th className="text-left font-medium p-4 text-muted-foreground">Description</th>
                 <th className="text-left font-medium p-4 text-muted-foreground">Brand</th>
                 <th className="text-left font-medium p-4 text-muted-foreground">Model</th>
                 <th className="text-left font-medium p-4 text-muted-foreground">Category</th>
                 <th className="text-left font-medium p-4 text-muted-foreground">Unit</th>
-                <th className="text-right font-medium p-4 text-muted-foreground">Current stock</th>
+                <th className="text-right font-medium p-4 text-muted-foreground whitespace-nowrap">Current stock</th>
                 <th className="text-right font-medium p-4 text-muted-foreground whitespace-nowrap">Cost price</th>
+                <th className="text-right font-medium p-4 text-muted-foreground whitespace-nowrap">Wholesale price</th>
+                <th className="text-right font-medium p-4 text-muted-foreground whitespace-nowrap">Retail price</th>
                 <th className="text-right font-medium p-4 text-muted-foreground">Reorder level</th>
                 <th className="text-left font-medium p-4 text-muted-foreground">Warehouse location</th>
                 <th className="text-left font-medium p-4 text-muted-foreground">Active</th>
@@ -98,18 +101,7 @@ export function StockTable({ items }: StockTableProps) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ ...transition, delay: index * 0.02 }}
                 >
-                  <td className="p-4">
-                    {row.images?.length ? (
-                      <ProductImageThumbnailWithPreview
-                        src={row.images[0].secure_url}
-                        alt={row.name}
-                        productName={row.name}
-                        className="h-10 w-10"
-                      />
-                    ) : (
-                      <ProductImagePlaceholder className="h-10 w-10" />
-                    )}
-                  </td>
+                  <td className="p-4 tabular-nums text-muted-foreground">{index + 1}</td>
                   <InlineEditableCell
                     value={row.sku}
                     type="text"
@@ -123,6 +115,18 @@ export function StockTable({ items }: StockTableProps) {
                     placeholder="SKU"
                     inputClassName="w-28 min-w-0 font-mono"
                   />
+                  <td className="p-4">
+                    {row.images?.length ? (
+                      <ProductImageThumbnailWithPreview
+                        src={row.images[0].secure_url}
+                        alt={row.name}
+                        productName={row.name}
+                        className="h-10 w-10"
+                      />
+                    ) : (
+                      <ProductImagePlaceholder className="h-10 w-10" />
+                    )}
+                  </td>
                   <InlineEditableCell
                     value={row.name}
                     type="text"
@@ -199,9 +203,12 @@ export function StockTable({ items }: StockTableProps) {
                   />
                   <td className="p-4 text-right">
                     {isOutOfStock ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-md bg-destructive/20 px-2 py-1 text-destructive font-semibold tabular-nums">
-                        <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />
-                        0 — Out of stock
+                      <span
+                        title="Out of stock"
+                        className="inline-flex items-center gap-1 rounded-md bg-destructive/20 px-2 py-0.5 text-destructive font-semibold tabular-nums whitespace-nowrap"
+                      >
+                        <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                        0
                       </span>
                     ) : (
                       <span className="tabular-nums font-medium">{row.currentStock}</span>
@@ -218,6 +225,34 @@ export function StockTable({ items }: StockTableProps) {
                     onCancel={() => setEditing(null)}
                     disabled={updateMutation.isPending}
                     displayValue={row.costPrice != null ? formatCurrency(row.costPrice) : "—"}
+                    align="right"
+                    inputClassName="w-28 min-w-0 text-right"
+                  />
+                  <InlineEditableCell
+                    value={row.wholesalePrice ?? ""}
+                    type="number"
+                    productId={row.id}
+                    field="wholesalePrice"
+                    isEditing={isEditing(row.id, "wholesalePrice")}
+                    onStartEdit={() => setEditing({ productId: row.id, field: "wholesalePrice" })}
+                    onSave={(v) => handleSave(row.id, "wholesalePrice", v)}
+                    onCancel={() => setEditing(null)}
+                    disabled={updateMutation.isPending}
+                    displayValue={row.wholesalePrice != null ? formatCurrency(row.wholesalePrice) : "—"}
+                    align="right"
+                    inputClassName="w-28 min-w-0 text-right"
+                  />
+                  <InlineEditableCell
+                    value={row.retailPrice ?? ""}
+                    type="number"
+                    productId={row.id}
+                    field="retailPrice"
+                    isEditing={isEditing(row.id, "retailPrice")}
+                    onStartEdit={() => setEditing({ productId: row.id, field: "retailPrice" })}
+                    onSave={(v) => handleSave(row.id, "retailPrice", v)}
+                    onCancel={() => setEditing(null)}
+                    disabled={updateMutation.isPending}
+                    displayValue={row.retailPrice != null ? formatCurrency(row.retailPrice) : "—"}
                     align="right"
                     inputClassName="w-28 min-w-0 text-right"
                   />

@@ -43,9 +43,11 @@ export default function NewStockPage() {
   const [unit, setUnit] = useState("pieces");
   const [initialStock, setInitialStock] = useState<string>("0");
   const [costPrice, setCostPrice] = useState<string>("");
-  const [normalSellingPrice, setNormalSellingPrice] = useState<string>("");
+  const [wholesalePrice, setWholesalePrice] = useState<string>("");
+  const [retailPrice, setRetailPrice] = useState<string>("");
   const [costPriceFocused, setCostPriceFocused] = useState(false);
-  const [normalSellingPriceFocused, setNormalSellingPriceFocused] = useState(false);
+  const [wholesalePriceFocused, setWholesalePriceFocused] = useState(false);
+  const [retailPriceFocused, setRetailPriceFocused] = useState(false);
   // const [discountedSellingPrice, setDiscountedSellingPrice] = useState<string>("");
   const [reorderLevel, setReorderLevel] = useState<string>("");
   const [warehouseLocation, setWarehouseLocation] = useState("");
@@ -92,8 +94,8 @@ export default function NewStockPage() {
       unit: unit.trim() || "pieces",
       initialStock: initialStock !== "" ? Number(initialStock) : undefined,
       costPrice: costPrice !== "" ? Number(costPrice) : undefined,
-      normalSellingPrice: normalSellingPrice !== "" ? Number(normalSellingPrice) : undefined,
-      // discountedSellingPrice: discountedSellingPrice !== "" ? Number(discountedSellingPrice) : undefined,
+      wholesalePrice: wholesalePrice !== "" ? Number(wholesalePrice) : undefined,
+      retailPrice: retailPrice !== "" ? Number(retailPrice) : undefined,
       reorderLevel: reorderLevel !== "" ? Number(reorderLevel) : undefined,
       warehouseLocation: warehouseLocation.trim() || undefined,
       isActive,
@@ -231,34 +233,33 @@ export default function NewStockPage() {
                     <p className="text-xs text-muted-foreground mt-1">Per unit from producer</p>
                   </div>
                   <div>
-                    <Label htmlFor="normalSellingPrice" className="text-sm text-muted-foreground">Normal selling price</Label>
+                    <Label htmlFor="wholesalePrice" className="text-sm text-muted-foreground">Wholesale price</Label>
                     <Input
-                      id="normalSellingPrice"
+                      id="wholesalePrice"
                       type="text"
                       inputMode="decimal"
-                      value={normalSellingPriceFocused ? normalSellingPrice : formatCurrencyDisplay(normalSellingPrice)}
-                      onFocus={() => setNormalSellingPriceFocused(true)}
-                      onBlur={() => setNormalSellingPriceFocused(false)}
-                      onChange={(e) => setNormalSellingPrice(parseCurrencyInput(e.target.value))}
+                      value={wholesalePriceFocused ? wholesalePrice : formatCurrencyDisplay(wholesalePrice)}
+                      onFocus={() => setWholesalePriceFocused(true)}
+                      onBlur={() => setWholesalePriceFocused(false)}
+                      onChange={(e) => setWholesalePrice(parseCurrencyInput(e.target.value))}
                       placeholder="0.00"
                       className="mt-1.5 h-10 bg-background tabular-nums"
                     />
                   </div>
-                  {/* Discounted selling price – commented out for now
                   <div>
-                    <Label htmlFor="discountedSellingPrice" className="text-sm text-muted-foreground">Discounted selling price</Label>
+                    <Label htmlFor="retailPrice" className="text-sm text-muted-foreground">Retail price</Label>
                     <Input
-                      id="discountedSellingPrice"
-                      type="number"
-                      step="0.01"
-                      min={0}
-                      value={discountedSellingPrice}
-                      onChange={(e) => setDiscountedSellingPrice(e.target.value)}
+                      id="retailPrice"
+                      type="text"
+                      inputMode="decimal"
+                      value={retailPriceFocused ? retailPrice : formatCurrencyDisplay(retailPrice)}
+                      onFocus={() => setRetailPriceFocused(true)}
+                      onBlur={() => setRetailPriceFocused(false)}
+                      onChange={(e) => setRetailPrice(parseCurrencyInput(e.target.value))}
                       placeholder="0.00"
-                      className="mt-1.5 h-10 bg-background"
+                      className="mt-1.5 h-10 bg-background tabular-nums"
                     />
                   </div>
-                  */}
                   <div>
                     <Label htmlFor="reorderLevel" className="text-sm text-muted-foreground">Reorder level</Label>
                     <Input
