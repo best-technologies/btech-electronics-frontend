@@ -135,6 +135,36 @@ GET /distribution/dashboard?consignmentFromDate=2025-02-01&consignmentToDate=202
           "delivery_note": 25,
           "receipt": 15
         }
+      },
+      "stocks": {
+        "totalProducts": 150,
+        "activeProducts": 145,
+        "totalQuantity": 25000,
+        "totalValue": 1500000,
+        "lowStockCount": 12,
+        "outOfStockCount": 5,
+        "byCategory": [
+          {
+            "category": "Electronics",
+            "count": 50,
+            "quantity": 10000,
+            "value": 800000
+          }
+        ]
+      },
+      "invoices": {
+        "totalInvoices": 80,
+        "totalAmount": 500000,
+        "totalPaid": 350000,
+        "totalBalanceDue": 150000,
+        "byStatus": {
+          "draft": 5,
+          "issued": 10,
+          "partial": 15,
+          "paid": 45,
+          "overdue": 3,
+          "cancelled": 2
+        }
       }
     },
     "consignments": {
@@ -209,6 +239,20 @@ GET /distribution/dashboard?consignmentFromDate=2025-02-01&consignmentToDate=202
         "public_id": "string",
         "createdAt": "string (ISO date)"
       }
+    ],
+    "recentInvoices": [
+      {
+        "id": "string",
+        "invoiceNumber": "string",
+        "customer": "string",
+        "company": "string | null",
+        "issueDate": "string (ISO date)",
+        "dueDate": "string (ISO date) | null",
+        "status": "string",
+        "total": "number",
+        "paid": "number",
+        "balanceDue": "number"
+      }
     ]
   },
   "statusCode": 200
@@ -219,11 +263,29 @@ GET /distribution/dashboard?consignmentFromDate=2025-02-01&consignmentToDate=202
 
 ## Summary
 
-- **analysis** – Full breakdown of the **filtered set** (not just current page): consignments (totals, byStatus, bySupplier), bulk orders (totals, byStatus, byPaymentStatus), documents (counts by type).
+- **analysis** – Full breakdown: consignments (totals, byStatus, bySupplier), bulk orders (totals, byStatus, byPaymentStatus), documents (counts by type), **stocks** (products, quantity, value, low/out-of-stock, byCategory), **invoices** (totals, paid, balanceDue, byStatus).
 - **consignments** – Paginated list with `items` and `meta` (total, page, limit, totalPages, hasNextPage, hasPrevPage).
 - **bulkOrders** – Paginated list with `items` and `meta`.
 - **recentConsignmentDocuments** / **recentBulkOrderDocuments** – Latest 20 documents (filtered by the same criteria as consignments/bulk orders).
+- **recentInvoices** – Latest 5 invoices (id, invoiceNumber, customer, company, issueDate, dueDate, status, total, paid, balanceDue). Sorted by `createdAt` desc. Use for dashboard “recent invoices” widget.
 - **ConsignmentItem** fields include: `productName`, `cartons`, `quantity`, `unitPrice`, `totalCost`, `sku`, `description`, etc.
+
+---
+
+## recentInvoices (per item)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Invoice CUID |
+| invoiceNumber | string | e.g. INV-2026-0001 |
+| customer | string | Customer name |
+| company | string \| null | Customer company |
+| issueDate | string | ISO 8601 date |
+| dueDate | string \| null | ISO 8601 date |
+| status | string | draft, issued, partial, paid, overdue, cancelled |
+| total | number | Total amount (NGN) |
+| paid | number | Amount paid so far |
+| balanceDue | number | Outstanding balance |
 
 ---
 

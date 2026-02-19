@@ -62,6 +62,7 @@ export default function UserDetailPage() {
   const {
     data: user,
     isLoading,
+    isFetching,
     isError,
     error,
     refetch,
@@ -96,7 +97,7 @@ export default function UserDetailPage() {
     return null;
   }
 
-  if (isLoading && !user) {
+  if ((isLoading || isFetching) && !user) {
     return (
       <>
         <div className="border-b border-border bg-card/50">

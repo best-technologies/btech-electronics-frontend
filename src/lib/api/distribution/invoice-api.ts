@@ -137,8 +137,8 @@ export interface InvoiceListResponse {
 
 // --- Create payload ---
 
-/** Price type used for this line (wholesale vs retail); stored for record-keeping. */
-export type InvoiceItemPriceType = "wholesale" | "retail";
+/** Price type used for this line (wholesale, retail, or cost); stored for record-keeping. */
+export type InvoiceItemPriceType = "wholesale" | "retail" | "cost";
 
 export interface CreateInvoiceItemPayload {
   description: string;
@@ -147,7 +147,7 @@ export interface CreateInvoiceItemPayload {
   unit?: string;
   unitPrice: number;
   totalAmount?: number;
-  /** Whether this line used wholesale or retail price; sent for record-keeping. */
+  /** Whether this line used wholesale, retail, or cost price; sent for record-keeping. */
   priceType?: InvoiceItemPriceType;
 }
 
@@ -277,6 +277,22 @@ export const invoiceApi = {
       { headers: withAuth(accessToken) }
     );
     return unwrapBackendResponse(res);
+  },
+
+  /**
+   * Permanently delete an invoice. Reverts stock for paid items, removes payments and receipts.
+   * DELETE /distribution/invoicing/:id
+   */
+  delete: async (
+    accessToken: string,
+    id: string
+  ): Promise<{ deletedInvoiceNumber: string } | null> => {
+    const res = await apiClient.delete<BackendResponse<{ deletedInvoiceNumber: string }>>(
+      `${INVOICE_BASE}/${id}`,
+      { headers: withAuth(accessToken) }
+    );
+    const data = unwrapBackendResponse(res);
+    return data ?? null;
   },
 
   /**

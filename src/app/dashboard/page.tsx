@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuthStore } from "@/stores/authStore";
 import { dashboardApi } from "@/lib/api";
 import { useQuery } from "@/hooks/useQuery";
 import {
+  cn,
   formatFullName,
   formatDate,
   formatDateTime,
@@ -27,10 +28,74 @@ import {
   Receipt,
   Boxes,
   Banknote,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import type { DashboardData } from "@/lib/api";
 
 const DASHBOARD_QUERY_KEY = "dashboard";
+
+type SectionAccent =
+  | "teal"
+  | "violet"
+  | "blue"
+  | "amber"
+  | "emerald"
+  | "sky"
+  | "indigo"
+  | "rose";
+
+const ACCENT_CLASSES: Record<
+  SectionAccent,
+  { border: string; icon: string; title: string }
+> = {
+  teal: {
+    border: "border-t-2 border-teal-500/60",
+    icon: "bg-teal-500/10 text-teal-600 dark:text-teal-400",
+    title: "text-teal-700 dark:text-teal-300",
+  },
+  violet: {
+    border: "border-t-2 border-violet-500/60",
+    icon: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
+    title: "text-violet-700 dark:text-violet-300",
+  },
+  blue: {
+    border: "border-t-2 border-blue-500/60",
+    icon: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    title: "text-blue-700 dark:text-blue-300",
+  },
+  amber: {
+    border: "border-t-2 border-amber-500/60",
+    icon: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    title: "text-amber-700 dark:text-amber-300",
+  },
+  emerald: {
+    border: "border-t-2 border-emerald-500/60",
+    icon: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    title: "text-emerald-700 dark:text-emerald-300",
+  },
+  sky: {
+    border: "border-t-2 border-sky-500/60",
+    icon: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
+    title: "text-sky-700 dark:text-sky-300",
+  },
+  indigo: {
+    border: "border-t-2 border-indigo-500/60",
+    icon: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
+    title: "text-indigo-700 dark:text-indigo-300",
+  },
+  rose: {
+    border: "border-t-2 border-rose-500/60",
+    icon: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+    title: "text-rose-700 dark:text-rose-300",
+  },
+};
+
+function SectionDivider({ accent = "primary" }: { accent?: "primary" | SectionAccent }) {
+  const borderClass =
+    accent === "primary" ? "border-t-2 border-primary/50" : ACCENT_CLASSES[accent].border;
+  return <div className={cn("mt-6 sm:mt-8", borderClass)} aria-hidden />;
+}
 
 function SummaryCards({ summary }: { summary: NonNullable<DashboardData["summary"]> }) {
   const { consignments, bulkOrders, documents, stocks, invoices } = summary;
@@ -245,26 +310,60 @@ function DataSection({
   title,
   icon: Icon,
   id,
+  defaultOpen = true,
+  accent,
   children,
 }: {
   title: string;
   icon: React.ElementType;
   id?: string;
+  defaultOpen?: boolean;
+  accent?: SectionAccent;
   children: React.ReactNode;
 }) {
+  const [open, setOpen] = useState(defaultOpen);
+  const styles = accent ? ACCENT_CLASSES[accent] : null;
   return (
-    <section id={id} className="space-y-2 sm:space-y-4">
-      <div className="flex items-center gap-1.5 sm:gap-2">
-        <span className="flex h-5 w-5 items-center justify-center rounded-md bg-muted text-muted-foreground sm:h-8 sm:w-8 sm:rounded-lg">
+    <section
+      id={id}
+      className={cn(
+        "space-y-2 pt-6 sm:space-y-4 sm:pt-8",
+        styles ? styles.border : "border-t border-border/80"
+      )}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center gap-1.5 rounded-md py-0.5 text-left transition-colors hover:bg-muted/50 sm:gap-2 sm:py-1"
+        aria-expanded={open}
+      >
+        <span
+          className={cn(
+            "flex h-5 w-5 shrink-0 items-center justify-center rounded-md sm:h-8 sm:w-8 sm:rounded-lg",
+            styles ? styles.icon : "bg-muted text-muted-foreground"
+          )}
+        >
           <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
         </span>
-        <h2 className="text-xs font-semibold text-foreground sm:text-lg">{title}</h2>
-      </div>
-      <Card className="overflow-hidden border-border/60 shadow-sm">
-        <CardContent className="p-0">
-          <div className="-mx-px overflow-x-auto">{children}</div>
-        </CardContent>
-      </Card>
+        <h2
+          className={cn(
+            "text-xs font-semibold sm:text-lg",
+            styles ? styles.title : "text-foreground"
+          )}
+        >
+          {title}
+        </h2>
+        <span className="ml-auto flex h-5 w-5 shrink-0 items-center justify-center text-muted-foreground sm:h-6 sm:w-6">
+          {open ? <ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+        </span>
+      </button>
+      {open && (
+        <Card className="overflow-hidden border-border/60 shadow-sm">
+          <CardContent className="p-0">
+            <div className="-mx-px overflow-x-auto">{children}</div>
+          </CardContent>
+        </Card>
+      )}
     </section>
   );
 }
@@ -291,6 +390,7 @@ export default function DashboardPage() {
   const {
     data: dashboard,
     isLoading,
+    isFetching,
     isError,
     error,
     refetch,
@@ -309,7 +409,7 @@ export default function DashboardPage() {
     userProfile?.email ||
     "User";
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <>
         <div className="border-b border-border bg-card/50">
@@ -341,6 +441,7 @@ export default function DashboardPage() {
   }
 
   const summary = dashboard.summary;
+  const recentInvoices = dashboard.recentInvoices ?? [];
   const recentConsignments = dashboard.recentConsignments ?? [];
   const recentBulkOrders = dashboard.recentBulkOrders ?? [];
   const recentConsignmentDocs = dashboard.recentConsignmentDocuments ?? [];
@@ -393,15 +494,84 @@ export default function DashboardPage() {
         {summary && (
           <section>
             <div className="mb-2.5 flex items-center gap-1.5 sm:mb-4 sm:gap-2">
-              <TrendingUp className="h-3.5 w-3.5 text-primary sm:h-5 sm:w-5" />
-              <h2 className="text-xs font-semibold text-foreground sm:text-lg">Overview</h2>
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary sm:h-8 sm:w-8 sm:rounded-lg">
+                <TrendingUp className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
+              </span>
+              <h2 className="text-xs font-semibold text-primary sm:text-lg">Overview</h2>
             </div>
             <SummaryCards summary={summary} />
           </section>
         )}
 
+        <SectionDivider accent="primary" />
+
+        {/* Recent Invoices */}
+        <DataSection title="Invoices" icon={Receipt} id="recent-invoices" defaultOpen accent="teal">
+          {recentInvoices.length === 0 ? (
+            <EmptyTable message="No recent invoices." />
+          ) : (
+            <table className="w-full text-[11px] sm:text-sm min-w-[640px] sm:min-w-0">
+              <thead>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="text-left font-medium px-2 py-1.5 text-muted-foreground sm:p-4">Invoice #</th>
+                  <th className="text-left font-medium px-2 py-1.5 text-muted-foreground sm:p-4">Customer</th>
+                  <th className="text-left font-medium px-2 py-1.5 text-muted-foreground sm:p-4 hidden sm:table-cell">Company</th>
+                  <th className="text-left font-medium px-2 py-1.5 text-muted-foreground sm:p-4">Issue date</th>
+                  <th className="text-left font-medium px-2 py-1.5 text-muted-foreground sm:p-4 hidden md:table-cell">Due date</th>
+                  <th className="text-left font-medium px-2 py-1.5 text-muted-foreground sm:p-4">Status</th>
+                  <th className="text-right font-medium px-2 py-1.5 text-muted-foreground sm:p-4">Total</th>
+                  <th className="text-right font-medium px-2 py-1.5 text-muted-foreground sm:p-4 hidden sm:table-cell">Paid</th>
+                  <th className="text-right font-medium px-2 py-1.5 text-muted-foreground sm:p-4">Balance</th>
+                  <th className="w-8 sm:w-10" />
+                </tr>
+              </thead>
+              <tbody>
+                {recentInvoices.map((inv) => (
+                  <tr
+                    key={inv.id}
+                    className="border-b border-border/60 transition-colors hover:bg-muted/30"
+                  >
+                    <td className="px-2 py-1.5 font-mono text-[10px] font-medium sm:p-4 sm:text-xs">
+                      {inv.invoiceNumber}
+                    </td>
+                    <td className="px-2 py-1.5 sm:p-4">{inv.customer}</td>
+                    <td className="px-2 py-1.5 text-muted-foreground hidden sm:table-cell sm:p-4">
+                      {inv.company ?? "—"}
+                    </td>
+                    <td className="px-2 py-1.5 text-muted-foreground sm:p-4">{formatDate(inv.issueDate)}</td>
+                    <td className="px-2 py-1.5 text-muted-foreground hidden md:table-cell sm:p-4">
+                      {inv.dueDate ? formatDate(inv.dueDate) : "—"}
+                    </td>
+                    <td className="px-2 py-1.5 sm:p-4">
+                      <StatusBadge status={formatStatus(inv.status)} />
+                    </td>
+                    <td className="px-2 py-1.5 text-right font-medium sm:p-4">
+                      {formatCurrency(inv.total)}
+                    </td>
+                    <td className="px-2 py-1.5 text-right text-muted-foreground hidden sm:table-cell sm:p-4">
+                      {formatCurrency(inv.paid)}
+                    </td>
+                    <td className="px-2 py-1.5 text-right sm:p-4">
+                      {formatCurrency(inv.balanceDue)}
+                    </td>
+                    <td className="px-2 py-1.5 sm:p-4">
+                      <Link
+                        href={`/dashboard/invoice/${inv.id}`}
+                        className="inline-flex text-primary hover:text-primary/80"
+                        aria-label="View invoice"
+                      >
+                        <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </DataSection>
+
         {/* Recent Consignments */}
-        <DataSection title="Recent consignments" icon={Package} id="recent-consignments">
+        <DataSection title="Recent consignments" icon={Package} id="recent-consignments" defaultOpen accent="blue">
           {recentConsignments.length === 0 ? (
             <EmptyTable message="No recent consignments." />
           ) : (
@@ -460,8 +630,50 @@ export default function DashboardPage() {
           )}
         </DataSection>
 
+        {/* Recent Stocks */}
+        <DataSection title="Recent stocks" icon={Boxes} id="recent-stocks" defaultOpen accent="violet">
+          {summary?.stocks == null ? (
+            <EmptyTable message="Stock data not available." />
+          ) : (
+            <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
+                <div className="rounded-lg border border-border/60 bg-muted/30 p-2.5 sm:p-3">
+                  <p className="text-[10px] text-muted-foreground sm:text-xs">Products</p>
+                  <p className="text-base font-semibold sm:text-lg">{summary.stocks.totalProducts}</p>
+                </div>
+                <div className="rounded-lg border border-border/60 bg-muted/30 p-2.5 sm:p-3">
+                  <p className="text-[10px] text-muted-foreground sm:text-xs">Total value</p>
+                  <p className="text-base font-semibold sm:text-lg truncate" title={formatCurrency(summary.stocks.totalValue)}>
+                    {formatCurrency(summary.stocks.totalValue)}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border/60 bg-muted/30 p-2.5 sm:p-3">
+                  <p className="text-[10px] text-muted-foreground sm:text-xs">Low stock</p>
+                  <p className="text-base font-semibold text-amber-600 dark:text-amber-400 sm:text-lg">
+                    {summary.stocks.lowStockCount}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border/60 bg-muted/30 p-2.5 sm:p-3">
+                  <p className="text-[10px] text-muted-foreground sm:text-xs">Out of stock</p>
+                  <p className="text-base font-semibold text-destructive sm:text-lg">
+                    {summary.stocks.outOfStockCount}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button size="sm" asChild className="h-8 text-xs sm:h-9 sm:text-sm">
+                  <Link href="/dashboard/stocks" className="gap-1.5 sm:gap-2">
+                    View all stocks
+                    <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          )}
+        </DataSection>
+
         {/* Recent Bulk Orders */}
-        <DataSection title="Recent bulk orders" icon={ShoppingCart} id="recent-bulk-orders">
+        <DataSection title="Recent bulk orders" icon={ShoppingCart} id="recent-bulk-orders" defaultOpen={false} accent="emerald">
           {recentBulkOrders.length === 0 ? (
             <EmptyTable message="No recent bulk orders." />
           ) : (
@@ -516,6 +728,8 @@ export default function DashboardPage() {
           title="Recent consignment documents"
           icon={FileCheck}
           id="recent-consignment-documents"
+          defaultOpen={false}
+          accent="sky"
         >
           {recentConsignmentDocs.length === 0 ? (
             <EmptyTable message="No recent consignment documents." />
@@ -564,6 +778,8 @@ export default function DashboardPage() {
           title="Recent bulk order documents"
           icon={Receipt}
           id="recent-bulk-order-documents"
+          defaultOpen={false}
+          accent="amber"
         >
           {recentBulkOrderDocs.length === 0 ? (
             <EmptyTable message="No recent bulk order documents." />
@@ -608,7 +824,7 @@ export default function DashboardPage() {
         </DataSection>
 
         {/* All Consignments */}
-        <DataSection title="All consignments" icon={Package} id="all-consignments">
+        <DataSection title="All consignments" icon={Package} id="all-consignments" defaultOpen={false} accent="indigo">
           {allConsignments.length === 0 ? (
             <EmptyTable message="No consignments." />
           ) : (
@@ -672,7 +888,7 @@ export default function DashboardPage() {
         </DataSection>
 
         {/* All Bulk Orders */}
-        <DataSection title="All bulk orders" icon={ShoppingCart} id="all-bulk-orders">
+        <DataSection title="All bulk orders" icon={ShoppingCart} id="all-bulk-orders" defaultOpen={false} accent="rose">
           {allBulkOrders.length === 0 ? (
             <EmptyTable message="No bulk orders." />
           ) : (

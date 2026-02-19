@@ -22,15 +22,16 @@ import { formatCurrency } from "@/lib/utils";
 const DEFAULT_COMPANY_ADDRESS = "121/123, Obafemi Awolowo Way, Oke-Ado, Ibadan";
 const DEFAULT_COMPANY_PHONE = "08038086862, 08174615808";
 
-type InvoicePriceType = "wholesale" | "retail";
+type InvoicePriceType = "wholesale" | "retail" | "cost";
 
 interface LineItemRow extends CreateInvoiceItemPayload {
   id: string;
   /** Which product price to use for this line (only when product is from catalog). */
   priceType?: InvoicePriceType;
-  /** Stored from product at selection time so we can switch wholesale/retail. */
+  /** Stored from product at selection time so we can switch wholesale/retail/cost. */
   productWholesalePrice?: number | null;
   productRetailPrice?: number | null;
+  productCostPrice?: number | null;
 }
 
 function getDefaultDueDate(issueDate: string): string {
@@ -116,7 +117,10 @@ export default function NewInvoicePage() {
   }
 
   const hasPriceChoice = (row: LineItemRow) =>
-    row.productId && (row.productWholesalePrice != null || row.productRetailPrice != null);
+    row.productId &&
+    (row.productWholesalePrice != null ||
+      row.productRetailPrice != null ||
+      row.productCostPrice != null);
 
   function removeLineItem(id: string) {
     setLineItems((prev) => (prev.length > 1 ? prev.filter((r) => r.id !== id) : prev));
@@ -156,6 +160,7 @@ export default function NewInvoicePage() {
             priceType: undefined,
             productWholesalePrice: undefined,
             productRetailPrice: undefined,
+            productCostPrice: undefined,
           };
         })
       );
@@ -163,8 +168,15 @@ export default function NewInvoicePage() {
     }
     const wholesale = product.wholesalePrice ?? product.retailPrice ?? null;
     const retail = product.retailPrice ?? product.wholesalePrice ?? null;
-    const defaultType: InvoicePriceType = retail != null ? "retail" : "wholesale";
-    const defaultPrice = defaultType === "retail" ? (retail ?? wholesale ?? product.costPrice ?? 0) : (wholesale ?? retail ?? product.costPrice ?? 0);
+    const cost = product.costPrice != null ? product.costPrice : null;
+    const defaultType: InvoicePriceType =
+      wholesale != null ? "wholesale" : cost != null ? "cost" : retail != null ? "retail" : "wholesale";
+    const defaultPrice =
+      defaultType === "wholesale"
+        ? (wholesale ?? retail ?? cost ?? 0)
+        : defaultType === "cost"
+          ? (cost ?? wholesale ?? retail ?? 0)
+          : (retail ?? wholesale ?? cost ?? 0);
     const qty = lineItems.find((r) => r.id === id)?.quantity ?? 1;
     setLineItems((prev) =>
       prev.map((row) => {
@@ -179,6 +191,7 @@ export default function NewInvoicePage() {
           priceType: defaultType,
           productWholesalePrice: product.wholesalePrice ?? null,
           productRetailPrice: product.retailPrice ?? null,
+          productCostPrice: cost,
         };
       })
     );
@@ -190,8 +203,10 @@ export default function NewInvoicePage() {
         if (row.id !== id) return row;
         const price =
           priceType === "retail"
-            ? (row.productRetailPrice ?? row.productWholesalePrice ?? 0)
-            : (row.productWholesalePrice ?? row.productRetailPrice ?? 0);
+            ? (row.productRetailPrice ?? row.productWholesalePrice ?? row.productCostPrice ?? 0)
+            : priceType === "wholesale"
+              ? (row.productWholesalePrice ?? row.productRetailPrice ?? row.productCostPrice ?? 0)
+              : (row.productCostPrice ?? row.productWholesalePrice ?? row.productRetailPrice ?? 0);
         return {
           ...row,
           priceType,
@@ -373,13 +388,13 @@ export default function NewInvoicePage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-border bg-muted/20">
-                        <th className="text-left font-medium py-2.5 px-3 text-muted-foreground min-w-[200px]">Product</th>
-                        <th className="text-right font-medium py-2.5 px-3 text-muted-foreground w-[10%]">Qty</th>
-                        <th className="text-left font-medium py-2.5 px-3 text-muted-foreground w-[12%]">Unit</th>
-                        <th className="text-left font-medium py-2.5 px-3 text-muted-foreground w-[18%]">Price type</th>
-                        <th className="text-right font-medium py-2.5 px-3 text-muted-foreground w-[14%]">Price</th>
-                        <th className="text-right font-medium py-2.5 px-3 text-muted-foreground w-[12%]">Total</th>
-                        <th className="w-9" />
+                        <th className="text-left font-medium py-2 px-3 text-muted-foreground min-w-[200px]">Product</th>
+                        <th className="text-right font-medium py-2 px-3 text-muted-foreground w-20">Qty</th>
+                        <th className="text-left font-medium py-2 px-3 text-muted-foreground w-[12%]">Unit</th>
+                        <th className="text-left font-medium py-2 px-3 text-muted-foreground w-[18%]">Price type</th>
+                        <th className="text-right font-medium py-2 px-3 text-muted-foreground w-[14%]">Price</th>
+                        <th className="text-right font-medium py-2 px-3 text-muted-foreground w-[12%]">Total</th>
+                        <th className="w-9 px-2" />
                       </tr>
                     </thead>
                     <tbody>
@@ -397,13 +412,13 @@ export default function NewInvoicePage() {
                               canAddNewProduct={canManageStock}
                             />
                           </td>
-                          <td className="px-3 py-2 text-right">
+                          <td className="px-3 py-2 text-right w-20 align-top">
                             <Input
                               type="number"
                               min={1}
                               value={row.quantity}
                               onChange={(e) => updateLineItem(row.id, "quantity", Number(e.target.value))}
-                              className="h-8 w-16 rounded-md border-0 bg-transparent text-right focus-visible:ring-1 text-sm"
+                              className="h-8 w-full min-w-0 rounded-md border-0 bg-transparent text-right focus-visible:ring-1 text-sm tabular-nums"
                             />
                           </td>
                           <td className="px-3 py-2">
@@ -416,11 +431,14 @@ export default function NewInvoicePage() {
                           <td className="px-3 py-2">
                             {hasPriceChoice(row) ? (
                               <select
-                                value={row.priceType ?? "retail"}
+                                value={row.priceType ?? "wholesale"}
                                 onChange={(e) => setLinePriceType(row.id, e.target.value as InvoicePriceType)}
                                 className="h-8 w-full min-w-[100px] rounded-md border border-input bg-background px-2 text-xs text-foreground"
-                                aria-label="Use wholesale or retail price"
+                                aria-label="Price type: wholesale, retail, or cost"
                               >
+                                {row.productCostPrice != null && (
+                                  <option value="cost">Cost</option>
+                                )}
                                 {row.productWholesalePrice != null && (
                                   <option value="wholesale">Wholesale</option>
                                 )}
@@ -432,17 +450,8 @@ export default function NewInvoicePage() {
                               <span className="text-muted-foreground text-xs">—</span>
                             )}
                           </td>
-                          <td className="px-3 py-2 text-right">
-                            <Input
-                              type="number"
-                              step="0.01"
-                              min={0}
-                              value={row.unitPrice || ""}
-                              onChange={(e) =>
-                                updateLineItem(row.id, "unitPrice", parseFloat(e.target.value) || 0)
-                              }
-                              className="h-8 w-24 rounded-md border-0 bg-transparent text-right focus-visible:ring-1 text-sm ml-auto"
-                            />
+                          <td className="px-3 py-2 text-right tabular-nums text-sm text-foreground">
+                            {formatCurrency(row.unitPrice || 0)}
                           </td>
                           <td className="px-3 py-2 text-right font-medium tabular-nums text-foreground">
                             {row.quantity * (row.unitPrice || 0)}

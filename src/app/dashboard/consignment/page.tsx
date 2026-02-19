@@ -100,6 +100,7 @@ export default function ConsignmentPage() {
   const {
     data: listResponse,
     isLoading,
+    isFetching,
     isError,
     error,
     refetch,
@@ -136,7 +137,7 @@ export default function ConsignmentPage() {
   const statusLabel =
     STATUS_OPTIONS.find((o) => o.value === status)?.label ?? status;
 
-  if (isLoading && !listResponse) {
+  if ((isLoading || isFetching) && !listResponse) {
     return (
       <>
         <div className="border-b border-border bg-card/50">
@@ -214,11 +215,11 @@ export default function ConsignmentPage() {
           />
         )}
 
-        {!isLoading && !isError && listResponse && consignments.length === 0 && (
+        {!(isLoading || isFetching) && !isError && listResponse && consignments.length === 0 && (
           <ConsignmentEmptyState canManageConsignment={!!canManageConsignment} />
         )}
 
-        {!isLoading && !isError && listResponse && consignments.length > 0 && (
+        {!(isLoading || isFetching) && !isError && listResponse && consignments.length > 0 && (
           <ConsignmentTableSection
             consignments={consignments}
             meta={meta}

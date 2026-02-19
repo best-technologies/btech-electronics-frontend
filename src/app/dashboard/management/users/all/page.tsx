@@ -116,6 +116,7 @@ export default function AllUsersPage() {
   const {
     data: listResponse,
     isLoading: listLoading,
+    isFetching: listFetching,
     isError: listError,
     error: listErrorObj,
     refetch: refetchList,
@@ -154,7 +155,7 @@ export default function AllUsersPage() {
 
   const items = listResponse?.items ?? [];
   const meta = listResponse?.meta;
-  const isLoading = listLoading && !listResponse;
+  const isLoading = (listLoading || listFetching) && !listResponse;
 
   if (isLoading) {
     return (

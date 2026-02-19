@@ -46,6 +46,7 @@ export default function UserManagementPage() {
   const {
     data: dashboard,
     isLoading,
+    isFetching,
     isError,
     error,
     refetch,
@@ -72,7 +73,7 @@ export default function UserManagementPage() {
   const analysis = dashboard?.analysis;
   const recentUsers = dashboard?.recentUsers ?? [];
 
-  if (isLoading && !dashboard) {
+  if ((isLoading || isFetching) && !dashboard) {
     return (
       <>
         <div className="border-b border-border bg-card/50">

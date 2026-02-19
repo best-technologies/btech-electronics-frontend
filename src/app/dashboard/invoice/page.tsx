@@ -72,6 +72,7 @@ export default function InvoicePage() {
   const {
     data: listResponse,
     isLoading,
+    isFetching,
     isError,
     error,
     refetch,
@@ -100,7 +101,7 @@ export default function InvoicePage() {
     setSortOrder("desc");
   };
 
-  if (isLoading && !listResponse) {
+  if ((isLoading || isFetching) && !listResponse) {
     return (
       <>
         <div className="border-b border-border bg-card/50">
@@ -206,7 +207,7 @@ export default function InvoicePage() {
           </div>
         )}
 
-        {!isLoading && !isError && listResponse && items.length === 0 && (
+        {!(isLoading || isFetching) && !isError && listResponse && items.length === 0 && (
           <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/20 py-16 px-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-muted-foreground mb-4">
               <FileText className="h-7 w-7" />
@@ -232,7 +233,7 @@ export default function InvoicePage() {
           </div>
         )}
 
-        {!isLoading && !isError && listResponse && items.length > 0 && (
+        {!(isLoading || isFetching) && !isError && listResponse && items.length > 0 && (
           <>
             {meta && (
               <InvoicePagination

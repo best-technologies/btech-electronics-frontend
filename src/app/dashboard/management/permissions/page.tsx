@@ -46,6 +46,7 @@ export default function PermissionsManagementPage() {
   const {
     data: permissionsData,
     isLoading,
+    isFetching,
     isError,
     error,
     refetch,
@@ -128,7 +129,7 @@ export default function PermissionsManagementPage() {
 
   const permissions = permissionsData?.permissions ?? [];
 
-  if (isLoading && !permissionsData) {
+  if ((isLoading || isFetching) && !permissionsData) {
     return (
       <>
         <div className="border-b border-border bg-card/50">
@@ -193,7 +194,7 @@ export default function PermissionsManagementPage() {
 
         <Card className="border-border/60">
           <CardContent className="p-0">
-            {permissions.length === 0 && !isLoading ? (
+            {permissions.length === 0 && !(isLoading || isFetching) ? (
               <div className="flex flex-col items-center justify-center px-4 py-8 sm:py-16">
                 <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground sm:mb-4 sm:h-14 sm:w-14">
                   <ShieldCheck className="h-5 w-5 sm:h-7 sm:w-7" />

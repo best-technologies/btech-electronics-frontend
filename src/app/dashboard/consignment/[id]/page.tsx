@@ -60,7 +60,7 @@ export default function ConsignmentDetailPage() {
   const [editFormSelectedProduct, setEditFormSelectedProduct] = useState<StockSearchItem | null>(null);
 
   const queryKey = `consignment-${id}`;
-  const { data: consignment, isLoading, isError, error, refetch } = useQuery({
+  const { data: consignment, isLoading, isFetching, isError, error, refetch } = useQuery({
     queryKey,
     queryFn: () => consignmentApi.getById(accessToken!, id),
     enabled: !!accessToken && !!id,
@@ -210,7 +210,7 @@ export default function ConsignmentDetailPage() {
     );
   }
 
-  if (isLoading || !consignment) {
+  if ((isLoading || isFetching) || !consignment) {
     return (
       <div className="p-6">
         <p className="text-muted-foreground">Loading consignment…</p>

@@ -132,6 +132,19 @@ export interface RecentDocument {
   createdAt: string;
 }
 
+export interface RecentInvoice {
+  id: string;
+  invoiceNumber: string;
+  customer: string;
+  company: string | null;
+  issueDate: string;
+  dueDate: string | null;
+  status: string;
+  total: number;
+  paid: number;
+  balanceDue: number;
+}
+
 // --- Full list types (nested) ---
 
 export interface DashboardConsignmentItem {
@@ -225,6 +238,7 @@ export interface DashboardBulkOrderFull {
 
 export interface DashboardData {
   summary: DashboardSummary;
+  recentInvoices: RecentInvoice[];
   recentConsignments: RecentConsignment[];
   recentBulkOrders: RecentBulkOrder[];
   recentConsignmentDocuments: RecentDocument[];
@@ -324,10 +338,24 @@ interface BackendBulkOrderItem {
   documents?: unknown[];
 }
 
+interface BackendRecentInvoice {
+  id: string;
+  invoiceNumber: string;
+  customer: string;
+  company: string | null;
+  issueDate: string;
+  dueDate: string | null;
+  status: string;
+  total: number;
+  paid: number;
+  balanceDue: number;
+}
+
 interface BackendDashboardResponse {
   analysis: BackendAnalysis;
   consignments: { items: BackendConsignmentItem[]; meta?: unknown };
   bulkOrders: { items: BackendBulkOrderItem[]; meta?: unknown };
+  recentInvoices?: BackendRecentInvoice[];
   recentConsignmentDocuments: Array<{
     id: string;
     consignmentId?: string;
@@ -468,6 +496,19 @@ function mapBackendToDashboard(raw: BackendDashboardResponse | null): DashboardD
     createdAt: d.createdAt,
   }));
 
+  const recentInvoices: RecentInvoice[] = (raw.recentInvoices ?? []).map((inv) => ({
+    id: inv.id,
+    invoiceNumber: inv.invoiceNumber,
+    customer: inv.customer,
+    company: inv.company ?? null,
+    issueDate: inv.issueDate,
+    dueDate: inv.dueDate ?? null,
+    status: inv.status,
+    total: inv.total ?? 0,
+    paid: inv.paid ?? 0,
+    balanceDue: inv.balanceDue ?? 0,
+  }));
+
   const allConsignments: DashboardConsignmentFull[] = consignmentItems.map((c) => ({
     id: c.id,
     referenceNumber: c.referenceNumber,
@@ -511,6 +552,7 @@ function mapBackendToDashboard(raw: BackendDashboardResponse | null): DashboardD
 
   return {
     summary,
+    recentInvoices,
     recentConsignments,
     recentBulkOrders,
     recentConsignmentDocuments,

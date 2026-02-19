@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuthStore, selectHasManageInvoice } from "@/stores/authStore";
@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, FileDown, Banknote, History, ExternalLink, Undo2, X, FileText } from "lucide-react";
+import { ArrowLeft, FileDown, Banknote, History, ExternalLink, Undo2, X, FileText, Trash2 } from "lucide-react";
 
 function ReceiptThumbnail({ url, isImage }: { url: string; isImage: boolean }) {
   const [imageError, setImageError] = useState(false);
@@ -43,8 +43,11 @@ function ReceiptThumbnail({ url, isImage }: { url: string; isImage: boolean }) {
   );
 }
 
+const DELETE_COUNTDOWN_SECONDS = 10;
+
 export default function InvoiceDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const id = params?.id as string | undefined;
   const accessToken = useAuthStore((s) => s.accessToken);
   const canManageInvoice = useAuthStore(selectHasManageInvoice);
@@ -56,6 +59,8 @@ export default function InvoiceDetailPage() {
   const [receiptPreviewUrl, setReceiptPreviewUrl] = useState<string | null>(null);
   const [recordPaymentError, setRecordPaymentError] = useState<string | null>(null);
   const [showUnmarkConfirm, setShowUnmarkConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteCountdown, setDeleteCountdown] = useState(DELETE_COUNTDOWN_SECONDS);
 
   const RECEIPT_MAX_MB = 5;
   const RECEIPT_ACCEPT = "image/jpeg,image/png,image/jpg,application/pdf";
@@ -111,6 +116,7 @@ export default function InvoiceDetailPage() {
   const {
     data: invoice,
     isLoading,
+    isFetching,
     isError,
     error,
     refetch,
@@ -192,6 +198,16 @@ export default function InvoiceDetailPage() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: () => invoiceApi.delete(accessToken!, id!),
+    invalidateKeys: "invoice-list",
+    onSuccess: () => {
+      setShowDeleteConfirm(false);
+      setDeleteCountdown(DELETE_COUNTDOWN_SECONDS);
+      router.push("/dashboard/invoice");
+    },
+  });
+
   useEffect(() => {
     if (showUnmarkConfirm) {
       const onEscape = (e: KeyboardEvent) => {
@@ -201,6 +217,31 @@ export default function InvoiceDetailPage() {
       return () => document.removeEventListener("keydown", onEscape);
     }
   }, [showUnmarkConfirm, unmarkPaidMutation.isPending]);
+
+  useEffect(() => {
+    if (!showDeleteConfirm) return;
+    setDeleteCountdown(DELETE_COUNTDOWN_SECONDS);
+    const t = setInterval(() => {
+      setDeleteCountdown((s) => {
+        if (s <= 1) {
+          clearInterval(t);
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [showDeleteConfirm]);
+
+  useEffect(() => {
+    if (showDeleteConfirm) {
+      const onEscape = (e: KeyboardEvent) => {
+        if (e.key === "Escape" && !deleteMutation.isPending) setShowDeleteConfirm(false);
+      };
+      document.addEventListener("keydown", onEscape);
+      return () => document.removeEventListener("keydown", onEscape);
+    }
+  }, [showDeleteConfirm, deleteMutation.isPending]);
 
   async function handleDownloadPdf() {
     if (!accessToken || !id || !invoice) return;
@@ -236,7 +277,7 @@ export default function InvoiceDetailPage() {
     );
   }
 
-  if (isLoading && !invoice) {
+  if ((isLoading || isFetching) && !invoice) {
     return (
       <div className="w-full px-4 py-8 flex flex-col items-center justify-center min-h-[50vh]">
         <div className="h-10 w-48 rounded bg-muted animate-pulse mb-4" />
@@ -295,6 +336,18 @@ export default function InvoiceDetailPage() {
               <FileDown className="h-4 w-4" />
               {pdfDownloading ? "Downloading…" : "Download PDF"}
             </Button>
+            {canManageInvoice && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={deleteMutation.isPending}
+                className="gap-2 text-destructive border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete invoice
+              </Button>
+            )}
           </div>
         </div>
         {pdfError && (
@@ -805,6 +858,73 @@ export default function InvoiceDetailPage() {
                 >
                   <Undo2 className="h-4 w-4" />
                   {unmarkPaidMutation.isPending ? "Reverting…" : "Unmark as paid"}
+                </Button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {/* Delete invoice confirmation modal (10s countdown) */}
+      {typeof document !== "undefined" &&
+        showDeleteConfirm &&
+        ReactDOM.createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => {
+                if (!deleteMutation.isPending) {
+                  setShowDeleteConfirm(false);
+                  setDeleteCountdown(DELETE_COUNTDOWN_SECONDS);
+                }
+              }}
+              aria-hidden
+            />
+            <div
+              className="relative w-full max-w-md rounded-xl border border-destructive/30 bg-card p-6 shadow-2xl"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="delete-invoice-title"
+            >
+              <div className="flex items-start gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+                  <Trash2 className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h2 id="delete-invoice-title" className="text-lg font-semibold text-foreground">
+                    Delete invoice?
+                  </h2>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    This will <strong>permanently delete</strong> invoice{" "}
+                    <span className="font-mono font-medium text-foreground">{invoice.invoiceNumber}</span>.
+                    Stock that was reduced by payments will be restored; payment records and receipt files will be removed. This cannot be undone.
+                  </p>
+                  <p className="mt-4 text-sm font-medium text-foreground">
+                    {deleteCountdown > 0
+                      ? `You can confirm in ${deleteCountdown} second${deleteCountdown === 1 ? "" : "s"}.`
+                      : "You may confirm and delete below."}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setDeleteCountdown(DELETE_COUNTDOWN_SECONDS);
+                  }}
+                  disabled={deleteMutation.isPending}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => deleteMutation.mutate(undefined as never)}
+                  disabled={deleteCountdown > 0 || deleteMutation.isPending}
+                  className="gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {deleteMutation.isPending ? "Deleting…" : "Confirm and delete"}
                 </Button>
               </div>
             </div>
