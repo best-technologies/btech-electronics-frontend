@@ -89,11 +89,17 @@ export function ProductSearchSelect({
     [accessToken]
   );
 
-  // Debounced search when query changes
+  // Debounced search when query changes (skip when query matches selected product so dropdown stays closed after selection)
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     const trimmed = query.trim();
     if (trimmed.length < MIN_QUERY_LENGTH) {
+      setResults([]);
+      setOpen(false);
+      setLoading(false);
+      return;
+    }
+    if (selectedProduct && trimmed === selectedProduct.name) {
       setResults([]);
       setOpen(false);
       setLoading(false);
@@ -108,7 +114,7 @@ export function ProductSearchSelect({
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [query, runSearch]);
+  }, [query, selectedProduct, runSearch]);
 
   // Click outside to close (dropdown may be portaled so check both container and dropdown)
   useEffect(() => {
@@ -163,10 +169,11 @@ export function ProductSearchSelect({
 
   const handleSelect = (product: StockSearchItem) => {
     setSelectedProduct(product);
-    onSelect(product);
-    setQuery(product.name);
+    setResults([]); // clear so dropdown doesn’t show previous results if effect runs
     setOpen(false);
     setHighlightedIndex(-1);
+    setQuery(product.name);
+    onSelect(product);
   };
 
   const trimmed = query.trim();

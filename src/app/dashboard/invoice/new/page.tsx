@@ -63,7 +63,7 @@ export default function NewInvoicePage() {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [showMore, setShowMore] = useState(false);
   const [lineItems, setLineItems] = useState<LineItemRow[]>([
-    { id: "1", description: "", quantity: 1, unit: "pieces", unitPrice: 0, totalAmount: 0 },
+    { id: "1", description: "", quantity: 0, unit: "pieces", unitPrice: 0, totalAmount: 0 },
   ]);
 
   const canManageStock = useAuthStore(selectHasManageStock);
@@ -108,7 +108,7 @@ export default function NewInvoicePage() {
       {
         id: crypto.randomUUID(),
         description: "",
-        quantity: 1,
+        quantity: 0,
         unit: "pieces",
         unitPrice: 0,
         totalAmount: 0,
@@ -136,7 +136,7 @@ export default function NewInvoicePage() {
         if (row.id !== id) return row;
         const next = { ...row, [field]: value };
         if (field === "quantity" || field === "unitPrice") {
-          const q = field === "quantity" ? Number(value) : row.quantity;
+          const q = field === "quantity" ? (Number(value) || 0) : row.quantity;
           const p = field === "unitPrice" ? Number(value) : row.unitPrice;
           next.totalAmount = Math.round(q * p * 100) / 100;
         }
@@ -177,7 +177,7 @@ export default function NewInvoicePage() {
         : defaultType === "cost"
           ? (cost ?? wholesale ?? retail ?? 0)
           : (retail ?? wholesale ?? cost ?? 0);
-    const qty = lineItems.find((r) => r.id === id)?.quantity ?? 1;
+    const qty = lineItems.find((r) => r.id === id)?.quantity ?? 0;
     setLineItems((prev) =>
       prev.map((row) => {
         if (row.id !== id) return row;
@@ -187,7 +187,7 @@ export default function NewInvoicePage() {
           productId: product.id,
           unit: product.unit || "pieces",
           unitPrice: defaultPrice,
-          totalAmount: qty * defaultPrice,
+          totalAmount: (qty || 0) * defaultPrice,
           priceType: defaultType,
           productWholesalePrice: product.wholesalePrice ?? null,
           productRetailPrice: product.retailPrice ?? null,
@@ -211,7 +211,7 @@ export default function NewInvoicePage() {
           ...row,
           priceType,
           unitPrice: price,
-          totalAmount: (row.quantity || 1) * price,
+          totalAmount: (row.quantity || 0) * price,
         };
       })
     );
@@ -283,9 +283,9 @@ export default function NewInvoicePage() {
           <div className="flex-1 min-w-0 space-y-6">
             {/* Customer + dates: one compact block */}
             <Card className="border-border/60 overflow-hidden">
-              <CardContent className="p-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div>
+              <CardContent className="p-4 sm:p-5">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                  <div className="min-w-0">
                     <Label htmlFor="customerName" className="text-xs">Customer *</Label>
                     <Input
                       id="customerName"
@@ -293,20 +293,20 @@ export default function NewInvoicePage() {
                       onChange={(e) => setCustomerName(e.target.value)}
                       placeholder="Name"
                       required
-                      className="mt-1 h-9 rounded-md"
+                      className="mt-1 h-9 rounded-md min-w-0"
                     />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <Label htmlFor="customerCompany" className="text-xs">Company</Label>
                     <Input
                       id="customerCompany"
                       value={customerCompany}
                       onChange={(e) => setCustomerCompany(e.target.value)}
                       placeholder="Optional"
-                      className="mt-1 h-9 rounded-md"
+                      className="mt-1 h-9 rounded-md min-w-0"
                     />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <Label htmlFor="issueDate" className="text-xs">Issue date *</Label>
                     <Input
                       id="issueDate"
@@ -314,20 +314,20 @@ export default function NewInvoicePage() {
                       value={issueDate}
                       onChange={(e) => setIssueDate(e.target.value)}
                       required
-                      className="mt-1 h-9 rounded-md"
+                      className="mt-1 h-9 rounded-md min-w-0"
                     />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <Label htmlFor="dueDate" className="text-xs">Due date</Label>
                     <Input
                       id="dueDate"
                       type="date"
                       value={dueDate}
                       onChange={(e) => setDueDate(e.target.value)}
-                      className="mt-1 h-9 rounded-md"
+                      className="mt-1 h-9 rounded-md min-w-0"
                     />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <Label htmlFor="customerEmail" className="text-xs">Email</Label>
                     <Input
                       id="customerEmail"
@@ -335,30 +335,30 @@ export default function NewInvoicePage() {
                       value={customerEmail}
                       onChange={(e) => setCustomerEmail(e.target.value)}
                       placeholder="billing@example.com"
-                      className="mt-1 h-9 rounded-md"
+                      className="mt-1 h-9 rounded-md min-w-0"
                     />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <Label htmlFor="customerPhone" className="text-xs">Phone</Label>
                     <Input
                       id="customerPhone"
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
                       placeholder="+234..."
-                      className="mt-1 h-9 rounded-md"
+                      className="mt-1 h-9 rounded-md min-w-0"
                     />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <Label htmlFor="paymentTerms" className="text-xs">Terms</Label>
                     <Input
                       id="paymentTerms"
                       value={paymentTerms}
                       onChange={(e) => setPaymentTerms(e.target.value)}
                       placeholder="Net 30"
-                      className="mt-1 h-9 rounded-md"
+                      className="mt-1 h-9 rounded-md min-w-0"
                     />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <Label htmlFor="taxAmount" className="text-xs">Tax</Label>
                     <Input
                       id="taxAmount"
@@ -367,7 +367,8 @@ export default function NewInvoicePage() {
                       min={0}
                       value={taxAmount}
                       onChange={(e) => setTaxAmount(e.target.value)}
-                      className="mt-1 h-9 rounded-md"
+                      onFocus={(e) => e.target.select()}
+                      className="mt-1 h-9 rounded-md min-w-0"
                     />
                   </div>
                 </div>
@@ -377,19 +378,15 @@ export default function NewInvoicePage() {
             {/* Line items: table */}
             <Card className="border-border/60 overflow-hidden">
               <CardContent className="p-0">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
+                <div className="px-4 py-3 border-b border-border bg-muted/30">
                   <span className="text-sm font-medium text-foreground">Items</span>
-                  <Button type="button" variant="ghost" size="sm" onClick={addLineItem} className="h-8 gap-1.5 text-xs">
-                    <Plus className="h-3.5 w-3.5" />
-                    Add line
-                  </Button>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-border bg-muted/20">
                         <th className="text-left font-medium py-2 px-3 text-muted-foreground min-w-[200px]">Product</th>
-                        <th className="text-right font-medium py-2 px-3 text-muted-foreground w-20">Qty</th>
+                        <th className="text-right font-medium py-2 px-3 text-muted-foreground min-w-[72px] sm:w-24">Qty</th>
                         <th className="text-left font-medium py-2 px-3 text-muted-foreground w-[12%]">Unit</th>
                         <th className="text-left font-medium py-2 px-3 text-muted-foreground w-[18%]">Price type</th>
                         <th className="text-right font-medium py-2 px-3 text-muted-foreground w-[14%]">Price</th>
@@ -412,20 +409,27 @@ export default function NewInvoicePage() {
                               canAddNewProduct={canManageStock}
                             />
                           </td>
-                          <td className="px-3 py-2 text-right w-20 align-top">
+                          <td className="px-2 py-2 sm:px-3 sm:py-2 text-right min-w-[72px] sm:w-24 align-top">
                             <Input
                               type="number"
+                              inputMode="numeric"
                               min={1}
-                              value={row.quantity}
-                              onChange={(e) => updateLineItem(row.id, "quantity", Number(e.target.value))}
-                              className="h-8 w-full min-w-0 rounded-md border-0 bg-transparent text-right focus-visible:ring-1 text-sm tabular-nums"
+                              value={row.quantity === 0 ? "" : row.quantity}
+                              onChange={(e) => {
+                                const v = e.target.value;
+                                const num = v === "" ? 0 : Math.max(0, Math.floor(Number(v)) || 0);
+                                updateLineItem(row.id, "quantity", num);
+                              }}
+                              onFocus={(e) => e.target.select()}
+                              placeholder="0"
+                              className="h-11 w-full min-w-[64px] rounded-md border border-input bg-background text-right focus-visible:ring-2 text-base tabular-nums sm:h-8 sm:min-w-0 sm:border-0 sm:bg-transparent sm:text-sm sm:focus-visible:ring-1"
                             />
                           </td>
-                          <td className="px-3 py-2">
+                          <td className="px-2 py-2 sm:px-3 sm:py-2">
                             <Input
                               value={row.unit}
                               onChange={(e) => updateLineItem(row.id, "unit", e.target.value)}
-                              className="h-8 w-20 rounded-md border-0 bg-transparent focus-visible:ring-1 text-sm"
+                              className="h-11 w-full min-w-[72px] rounded-md border border-input bg-background focus-visible:ring-2 text-base sm:h-8 sm:w-20 sm:min-w-0 sm:border-0 sm:bg-transparent sm:text-sm sm:focus-visible:ring-1"
                             />
                           </td>
                           <td className="px-3 py-2">
@@ -454,7 +458,7 @@ export default function NewInvoicePage() {
                             {formatCurrency(row.unitPrice || 0)}
                           </td>
                           <td className="px-3 py-2 text-right font-medium tabular-nums text-foreground">
-                            {row.quantity * (row.unitPrice || 0)}
+                            {(row.quantity || 0) * (row.unitPrice || 0)}
                           </td>
                           <td className="px-2 py-2">
                             <Button
@@ -472,6 +476,22 @@ export default function NewInvoicePage() {
                         </tr>
                       ))}
                     </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colSpan={7} className="border-t border-border bg-muted/20 px-4 py-3">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={addLineItem}
+                            className="h-9 w-full gap-1.5 text-sm sm:w-auto sm:min-w-[120px]"
+                          >
+                            <Plus className="h-4 w-4" />
+                            Add line
+                          </Button>
+                        </td>
+                      </tr>
+                    </tfoot>
                   </table>
                 </div>
               </CardContent>
