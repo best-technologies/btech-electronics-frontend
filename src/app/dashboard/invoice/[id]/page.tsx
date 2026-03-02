@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuthStore, selectHasManageInvoice } from "@/stores/authStore";
-import { invoiceApi, type Invoice } from "@/lib/api";
+import { invoiceApi, type Invoice, type DeliveryNote } from "@/lib/api";
 import { useQuery } from "@/hooks/useQuery";
 import { useMutation } from "@/hooks/useMutation";
 import { useQueryStore } from "@/stores/queryStore";
@@ -15,7 +15,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, FileDown, Banknote, History, ExternalLink, Undo2, X, FileText, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  FileDown,
+  Banknote,
+  History,
+  ExternalLink,
+  Undo2,
+  X,
+  FileText,
+  Trash2,
+  Truck,
+  Pencil,
+} from "lucide-react";
 
 function ReceiptThumbnail({ url, isImage }: { url: string; isImage: boolean }) {
   const [imageError, setImageError] = useState(false);
@@ -61,6 +73,16 @@ export default function InvoiceDetailPage() {
   const [showUnmarkConfirm, setShowUnmarkConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteCountdown, setDeleteCountdown] = useState(DELETE_COUNTDOWN_SECONDS);
+
+  const [deliveryDriverName, setDeliveryDriverName] = useState("");
+  const [deliveryDriverPhone, setDeliveryDriverPhone] = useState("");
+  const [deliveryVehicleNumber, setDeliveryVehicleNumber] = useState("");
+  const [deliveryAuthorisedBy, setDeliveryAuthorisedBy] = useState("");
+  const [deliveryNoteText, setDeliveryNoteText] = useState(
+    "Goods delivered in good condition are not returnable"
+  );
+  const [deliveryError, setDeliveryError] = useState<string | null>(null);
+  const [isEditingDelivery, setIsEditingDelivery] = useState(false);
 
   const RECEIPT_MAX_MB = 5;
   const RECEIPT_ACCEPT = "image/jpeg,image/png,image/jpg,application/pdf";
@@ -123,6 +145,18 @@ export default function InvoiceDetailPage() {
   } = useQuery({
     queryKey: `invoice-${id}`,
     queryFn: () => invoiceApi.getById(accessToken!, id!),
+    enabled: !!accessToken && !!id,
+  });
+
+  const {
+    data: deliveryNote,
+    isLoading: isDeliveryLoading,
+    isError: isDeliveryError,
+    error: deliveryFetchError,
+    refetch: refetchDeliveryNote,
+  } = useQuery({
+    queryKey: `invoice-${id}-delivery-note`,
+    queryFn: () => invoiceApi.getDeliveryNote(accessToken!, id!),
     enabled: !!accessToken && !!id,
   });
 
@@ -208,6 +242,58 @@ export default function InvoiceDetailPage() {
     },
   });
 
+  const createDeliveryNoteMutation = useMutation({
+    mutationFn: (payload: {
+      driverName: string;
+      driverPhone: string;
+      vehicleNumber: string;
+      authorisedBy: string;
+      note?: string;
+    }) =>
+      invoiceApi
+        .createDeliveryNote(accessToken!, id!, payload)
+        .then((d) => d ?? ({} as DeliveryNote)),
+    invalidateKeys: "invoice-list",
+    onSuccess: (data) => {
+      if (data && "id" in data) {
+        setDeliveryError(null);
+        refetchDeliveryNote();
+      }
+    },
+  });
+
+  const updateDeliveryNoteMutation = useMutation({
+    mutationFn: (payload: {
+      driverName?: string;
+      driverPhone?: string;
+      vehicleNumber?: string;
+      authorisedBy?: string;
+      note?: string;
+    }) =>
+      invoiceApi
+        .updateDeliveryNote(accessToken!, id!, payload)
+        .then((d) => d ?? ({} as DeliveryNote)),
+    invalidateKeys: "invoice-list",
+    onSuccess: () => {
+      setDeliveryError(null);
+      refetchDeliveryNote();
+    },
+  });
+
+  const deleteDeliveryNoteMutation = useMutation({
+    mutationFn: () => invoiceApi.deleteDeliveryNote(accessToken!, id!),
+    invalidateKeys: "invoice-list",
+    onSuccess: () => {
+      setDeliveryError(null);
+      refetchDeliveryNote();
+      setDeliveryDriverName("");
+      setDeliveryDriverPhone("");
+      setDeliveryVehicleNumber("");
+      setDeliveryAuthorisedBy("");
+      setDeliveryNoteText("Goods delivered in good condition are not returnable");
+    },
+  });
+
   useEffect(() => {
     if (showUnmarkConfirm) {
       const onEscape = (e: KeyboardEvent) => {
@@ -243,6 +329,19 @@ export default function InvoiceDetailPage() {
     }
   }, [showDeleteConfirm, deleteMutation.isPending]);
 
+  useEffect(() => {
+    if (deliveryNote) {
+      setDeliveryDriverName(deliveryNote.driverName);
+      setDeliveryDriverPhone(deliveryNote.driverPhone);
+      setDeliveryVehicleNumber(deliveryNote.vehicleNumber);
+      setDeliveryAuthorisedBy(deliveryNote.authorisedBy);
+      setDeliveryNoteText(deliveryNote.note);
+      setIsEditingDelivery(false);
+    } else {
+      setIsEditingDelivery(true);
+    }
+  }, [deliveryNote]);
+
   async function handleDownloadPdf() {
     if (!accessToken || !id || !invoice) return;
     setPdfError(null);
@@ -263,6 +362,65 @@ export default function InvoiceDetailPage() {
       setPdfError(err instanceof Error ? err.message : "Download failed");
     } finally {
       setPdfDownloading(false);
+    }
+  }
+
+  async function handleDownloadDeliveryNotePdf() {
+    if (!accessToken || !id || !invoice) return;
+    setDeliveryError(null);
+    try {
+      const { blob, filename } = await invoiceApi.downloadDeliveryNotePdf(
+        accessToken,
+        id,
+        `delivery-note-${invoice.invoiceNumber}.pdf`
+      );
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setDeliveryError(err instanceof Error ? err.message : "Download failed");
+    }
+  }
+
+  function handleSubmitDeliveryNote(e: React.FormEvent) {
+    e.preventDefault();
+    setDeliveryError(null);
+    if (!deliveryDriverName.trim()) {
+      setDeliveryError("Driver name is required.");
+      return;
+    }
+    if (!deliveryDriverPhone.trim()) {
+      setDeliveryError("Driver phone is required.");
+      return;
+    }
+    if (!deliveryVehicleNumber.trim()) {
+      setDeliveryError("Vehicle number is required.");
+      return;
+    }
+    if (!deliveryAuthorisedBy.trim()) {
+      setDeliveryError("Authorised by is required.");
+      return;
+    }
+
+    const payload = {
+      driverName: deliveryDriverName.trim(),
+      driverPhone: deliveryDriverPhone.trim(),
+      vehicleNumber: deliveryVehicleNumber.trim(),
+      authorisedBy: deliveryAuthorisedBy.trim(),
+      note: deliveryNoteText.trim() || undefined,
+    };
+
+    if (!deliveryNote) {
+      createDeliveryNoteMutation.mutateAsync(payload).then(() => {
+        setIsEditingDelivery(false);
+      });
+    } else {
+      updateDeliveryNoteMutation.mutateAsync(payload).then(() => {
+        setIsEditingDelivery(false);
+      });
     }
   }
 
@@ -813,6 +971,247 @@ export default function InvoiceDetailPage() {
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">No payment history yet.</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Delivery note */}
+            <Card className="border-border/60 mt-4">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <div className="flex items-center gap-2">
+                  <Truck className="h-4 w-4 text-primary" />
+                  <CardTitle className="text-base">Delivery note</CardTitle>
+                </div>
+                {deliveryNote && !isEditingDelivery && (
+                  <div className="flex items-center gap-1.5">
+                    {canManageInvoice && (
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingDelivery(true)}
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                        title="Edit delivery note"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleDownloadDeliveryNotePdf}
+                      disabled={!deliveryNote}
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:bg-muted/40 disabled:opacity-60 disabled:cursor-not-allowed"
+                      title={deliveryNote ? "Download delivery note PDF" : "Create a delivery note first"}
+                    >
+                      <FileDown className="h-3.5 w-3.5" />
+                    </button>
+                    {canManageInvoice && (
+                      <button
+                        type="button"
+                        onClick={() => deleteDeliveryNoteMutation.mutate(undefined as never)}
+                        disabled={deleteDeliveryNoteMutation.isPending || !deliveryNote}
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-destructive/40 bg-card text-destructive hover:bg-destructive/10 disabled:opacity-60 disabled:cursor-not-allowed"
+                        title="Delete delivery note"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </CardHeader>
+              <CardContent>
+                {isDeliveryLoading ? (
+                  <p className="text-sm text-muted-foreground">Checking delivery note…</p>
+                ) : (
+                  <>
+                    {isDeliveryError && !deliveryNote && (
+                      <p className="text-sm text-destructive mb-2">
+                        {deliveryFetchError?.message ?? "Unable to load delivery note."}
+                      </p>
+                    )}
+
+                    {/* View mode: show delivery note summary */}
+                    {deliveryNote && !isEditingDelivery && (
+                      <div className="space-y-3 text-sm">
+                        <div className="grid grid-cols-1 gap-2">
+                          <div>
+                            <p className="text-xs text-muted-foreground">Driver</p>
+                            <p className="font-medium text-foreground">
+                              {deliveryNote.driverName} ({deliveryNote.driverPhone})
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Vehicle number</p>
+                            <p className="font-medium text-foreground">
+                              {deliveryNote.vehicleNumber}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Authorised by</p>
+                            <p className="font-medium text-foreground">
+                              {deliveryNote.authorisedBy}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Note</p>
+                            <p className="text-foreground">
+                              {deliveryNote.note ||
+                                "Goods delivered in good condition are not returnable"}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Created {formatDateTime(deliveryNote.createdAt)}
+                          {deliveryNote.updatedAt !== deliveryNote.createdAt && (
+                            <> · Updated {formatDateTime(deliveryNote.updatedAt)}</>
+                          )}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Edit/create mode: show form */}
+                    {(!deliveryNote || isEditingDelivery) && (
+                      <form onSubmit={handleSubmitDeliveryNote} className="space-y-3 mt-1">
+                        <div className="grid grid-cols-1 gap-3">
+                          <div className="space-y-1.5">
+                            <Label htmlFor="driverName" className="text-xs">
+                              Driver name *
+                            </Label>
+                            <Input
+                              id="driverName"
+                              value={deliveryDriverName}
+                              onChange={(e) => setDeliveryDriverName(e.target.value)}
+                              disabled={
+                                !canManageInvoice ||
+                                createDeliveryNoteMutation.isPending ||
+                                updateDeliveryNoteMutation.isPending
+                              }
+                              className="h-9 text-sm"
+                              placeholder="Driver full name"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label htmlFor="driverPhone" className="text-xs">
+                              Driver phone *
+                            </Label>
+                            <Input
+                              id="driverPhone"
+                              value={deliveryDriverPhone}
+                              onChange={(e) => setDeliveryDriverPhone(e.target.value)}
+                              disabled={
+                                !canManageInvoice ||
+                                createDeliveryNoteMutation.isPending ||
+                                updateDeliveryNoteMutation.isPending
+                              }
+                              className="h-9 text-sm"
+                              placeholder="+234..."
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label htmlFor="vehicleNumber" className="text-xs">
+                              Vehicle number *
+                            </Label>
+                            <Input
+                              id="vehicleNumber"
+                              value={deliveryVehicleNumber}
+                              onChange={(e) => setDeliveryVehicleNumber(e.target.value)}
+                              disabled={
+                                !canManageInvoice ||
+                                createDeliveryNoteMutation.isPending ||
+                                updateDeliveryNoteMutation.isPending
+                              }
+                              className="h-9 text-sm"
+                              placeholder="ABC-123-XY"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label htmlFor="authorisedBy" className="text-xs">
+                              Authorised by *
+                            </Label>
+                            <Input
+                              id="authorisedBy"
+                              value={deliveryAuthorisedBy}
+                              onChange={(e) => setDeliveryAuthorisedBy(e.target.value)}
+                              disabled={
+                                !canManageInvoice ||
+                                createDeliveryNoteMutation.isPending ||
+                                updateDeliveryNoteMutation.isPending
+                              }
+                              className="h-9 text-sm"
+                              placeholder="Warehouse manager"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label htmlFor="deliveryNoteText" className="text-xs">
+                              Note
+                            </Label>
+                            <Input
+                              id="deliveryNoteText"
+                              value={deliveryNoteText}
+                              onChange={(e) => setDeliveryNoteText(e.target.value)}
+                              disabled={
+                                !canManageInvoice ||
+                                createDeliveryNoteMutation.isPending ||
+                                updateDeliveryNoteMutation.isPending
+                              }
+                              className="h-9 text-sm"
+                              placeholder="Goods delivered in good condition are not returnable"
+                            />
+                          </div>
+                        </div>
+
+                        {(deliveryError ||
+                          createDeliveryNoteMutation.isError ||
+                          updateDeliveryNoteMutation.isError ||
+                          deleteDeliveryNoteMutation.isError) && (
+                          <p className="text-sm text-destructive">
+                            {deliveryError ??
+                              createDeliveryNoteMutation.error?.message ??
+                              updateDeliveryNoteMutation.error?.message ??
+                              deleteDeliveryNoteMutation.error?.message}
+                          </p>
+                        )}
+
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="submit"
+                            size="sm"
+                            className="h-9 flex-1"
+                            disabled={
+                              !canManageInvoice ||
+                              createDeliveryNoteMutation.isPending ||
+                              updateDeliveryNoteMutation.isPending
+                            }
+                            title={
+                              !canManageInvoice
+                                ? "Manage invoice permission required"
+                                : undefined
+                            }
+                          >
+                            {deliveryNote
+                              ? updateDeliveryNoteMutation.isPending
+                                ? "Updating…"
+                                : "Save changes"
+                              : createDeliveryNoteMutation.isPending
+                                ? "Creating…"
+                                : "Create delivery note"}
+                          </Button>
+                          {deliveryNote && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-9"
+                              onClick={() => {
+                                setIsEditingDelivery(false);
+                                setDeliveryError(null);
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          )}
+                        </div>
+                      </form>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>

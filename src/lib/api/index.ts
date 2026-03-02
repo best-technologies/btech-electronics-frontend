@@ -66,6 +66,9 @@ export { invoiceApi } from "./distribution/invoice-api";
 export type {
   CreateInvoiceItemPayload,
   CreateInvoicePayload,
+  CreateDeliveryNotePayload,
+  UpdateDeliveryNotePayload,
+  DeliveryNote,
   Invoice,
   InvoiceItem,
   InvoiceItemPriceType,

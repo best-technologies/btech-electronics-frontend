@@ -61,6 +61,20 @@ export interface InvoiceItem {
   [key: string]: unknown;
 }
 
+// --- Delivery note ---
+
+export interface DeliveryNote {
+  id: string;
+  invoiceId: string;
+  driverName: string;
+  driverPhone: string;
+  vehicleNumber: string;
+  authorisedBy: string;
+  note: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // --- Invoice (list + detail) ---
 
 export interface Invoice {
@@ -171,6 +185,22 @@ export interface CreateInvoicePayload {
   items: CreateInvoiceItemPayload[];
 }
 
+export interface CreateDeliveryNotePayload {
+  driverName: string;
+  driverPhone: string;
+  vehicleNumber: string;
+  authorisedBy: string;
+  note?: string;
+}
+
+export interface UpdateDeliveryNotePayload {
+  driverName?: string;
+  driverPhone?: string;
+  vehicleNumber?: string;
+  authorisedBy?: string;
+  note?: string;
+}
+
 // --- API ---
 
 const INVOICE_BASE = "/distribution/invoicing";
@@ -201,6 +231,87 @@ export const invoiceApi = {
       headers: withAuth(accessToken),
     });
     return unwrapBackendResponse(res);
+  },
+
+  /** Get delivery note for an invoice by invoice ID. Returns null when none exists. */
+  getDeliveryNote: async (
+    accessToken: string,
+    invoiceId: string
+  ): Promise<DeliveryNote | null> => {
+    try {
+      const res = await apiClient.get<BackendResponse<DeliveryNote>>(
+        `${INVOICE_BASE}/${invoiceId}/delivery-note`,
+        {
+          headers: withAuth(accessToken),
+        }
+      );
+      return unwrapBackendResponse(res);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 404) {
+        return null;
+      }
+      throw err;
+    }
+  },
+
+  /** Create delivery note for an invoice by invoice ID. */
+  createDeliveryNote: async (
+    accessToken: string,
+    invoiceId: string,
+    payload: CreateDeliveryNotePayload
+  ): Promise<DeliveryNote | null> => {
+    const res = await apiClient.post<
+      BackendResponse<{
+        deliveryNote: DeliveryNote;
+        invoice: {
+          id: string;
+          invoiceNumber: string;
+          customerName: string;
+          customerCompany: string | null;
+          issueDate: string;
+          items: {
+            id: string;
+            description: string;
+            quantity: number;
+            unit: string;
+          }[];
+        };
+      }>
+    >(`${INVOICE_BASE}/${invoiceId}/delivery-note`, payload, {
+      headers: withAuth(accessToken),
+    });
+    const data = unwrapBackendResponse(res);
+    return data?.deliveryNote ?? null;
+  },
+
+  /** Update delivery note for an invoice by invoice ID. */
+  updateDeliveryNote: async (
+    accessToken: string,
+    invoiceId: string,
+    payload: UpdateDeliveryNotePayload
+  ): Promise<DeliveryNote | null> => {
+    const res = await apiClient.patch<BackendResponse<DeliveryNote>>(
+      `${INVOICE_BASE}/${invoiceId}/delivery-note`,
+      payload,
+      {
+        headers: withAuth(accessToken),
+      }
+    );
+    return unwrapBackendResponse(res);
+  },
+
+  /** Delete delivery note for an invoice by invoice ID. */
+  deleteDeliveryNote: async (
+    accessToken: string,
+    invoiceId: string
+  ): Promise<{ invoiceId: string; deletedDeliveryNoteId: string } | null> => {
+    const res = await apiClient.delete<
+      BackendResponse<{ invoiceId: string; deletedDeliveryNoteId: string }>
+    >(`${INVOICE_BASE}/${invoiceId}/delivery-note`, {
+      headers: withAuth(accessToken),
+    });
+    const data = unwrapBackendResponse(res);
+    return data ?? null;
   },
 
   /** Get a single invoice by ID. */
@@ -321,6 +432,38 @@ export const invoiceApi = {
       /filename[*]?=(?:"([^"]+)"|([^;\s]+))/i.exec(contentDisposition);
     const filename =
       filenameMatch?.[1] ?? filenameMatch?.[2] ?? suggestedFilename ?? `invoice-${id}.pdf`;
+    return { blob, filename: filename.trim() };
+  },
+
+  /**
+   * Download delivery note PDF for an invoice. Returns blob and suggested filename.
+   * GET /distribution/invoicing/:id/delivery-note/pdf
+   */
+  downloadDeliveryNotePdf: async (
+    accessToken: string,
+    invoiceId: string,
+    suggestedFilename?: string
+  ): Promise<{ blob: Blob; filename: string }> => {
+    const url = `${API_CONFIG.basePath}${INVOICE_BASE}/${invoiceId}/delivery-note/pdf`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    if (!response.ok) {
+      throw await ApiError.fromResponse(response);
+    }
+    const blob = await response.blob();
+    const contentDisposition = response.headers.get("Content-Disposition");
+    const filenameMatch =
+      contentDisposition &&
+      /filename[*]?=(?:"([^"]+)"|([^;\s]+))/i.exec(contentDisposition);
+    const filename =
+      filenameMatch?.[1] ??
+      filenameMatch?.[2] ??
+      suggestedFilename ??
+      `delivery-note-${invoiceId}.pdf`;
     return { blob, filename: filename.trim() };
   },
 };
