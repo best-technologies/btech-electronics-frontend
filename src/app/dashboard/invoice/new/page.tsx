@@ -16,13 +16,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProductSearchSelect } from "@/components/ProductSearchSelect";
-import { ArrowLeft, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { ArrowLeft, Check, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { cn, formatCurrency } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const DEFAULT_COMPANY_ADDRESS = "121/123, Obafemi Awolowo Way, Oke-Ado, Ibadan";
 const DEFAULT_COMPANY_PHONE = "08038086862, 08174615808";
 
-type InvoicePriceType = "wholesale" | "retail" | "cost";
+type InvoicePriceType = "wholesale" | "retail" | "cost" | "custom";
+
+const PRICE_TYPE_LABELS: Record<InvoicePriceType, string> = {
+  cost: "Cost",
+  wholesale: "Wholesale",
+  retail: "Retail",
+  custom: "Custom",
+};
 
 interface LineItemRow extends CreateInvoiceItemPayload {
   id: string;
@@ -52,7 +65,15 @@ export default function NewInvoicePage() {
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerCompany, setCustomerCompany] = useState("");
   const [issueDate, setIssueDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState(() => {
+    const issue = new Date().toISOString().slice(0, 10);
+    return getDefaultDueDate(issue);
+  });
+
+  function handleIssueDateChange(nextIssue: string) {
+    setIssueDate(nextIssue);
+    setDueDate((prev) => (prev === "" && nextIssue ? getDefaultDueDate(nextIssue) : prev));
+  }
   const [taxAmount, setTaxAmount] = useState<string>("0");
   const [paymentTerms, setPaymentTerms] = useState("Net 30");
   const [notes, setNotes] = useState("");
@@ -87,10 +108,6 @@ export default function NewInvoicePage() {
       router.replace("/dashboard/invoice");
     }
   }, [userProfile, canManageInvoice, router]);
-
-  useEffect(() => {
-    if (issueDate && !dueDate) setDueDate(getDefaultDueDate(issueDate));
-  }, [issueDate]);
 
   const subtotal = lineItems.reduce((s, r) => s + (r.quantity || 0) * (r.unitPrice || 0), 0);
   const tax = taxAmount !== "" ? Number(taxAmount) : 0;
@@ -201,6 +218,9 @@ export default function NewInvoicePage() {
     setLineItems((prev) =>
       prev.map((row) => {
         if (row.id !== id) return row;
+        if (priceType === "custom") {
+          return { ...row, priceType };
+        }
         const price =
           priceType === "retail"
             ? (row.productRetailPrice ?? row.productWholesalePrice ?? row.productCostPrice ?? 0)
@@ -312,7 +332,7 @@ export default function NewInvoicePage() {
                       id="issueDate"
                       type="date"
                       value={issueDate}
-                      onChange={(e) => setIssueDate(e.target.value)}
+                      onChange={(e) => handleIssueDateChange(e.target.value)}
                       required
                       className="mt-1 h-9 rounded-md min-w-0"
                     />
@@ -433,29 +453,94 @@ export default function NewInvoicePage() {
                             />
                           </td>
                           <td className="px-3 py-2">
-                            {hasPriceChoice(row) ? (
-                              <select
-                                value={row.priceType ?? "wholesale"}
-                                onChange={(e) => setLinePriceType(row.id, e.target.value as InvoicePriceType)}
-                                className="h-8 w-full min-w-[100px] rounded-md border border-input bg-background px-2 text-xs text-foreground"
-                                aria-label="Price type: wholesale, retail, or cost"
-                              >
-                                {row.productCostPrice != null && (
-                                  <option value="cost">Cost</option>
-                                )}
-                                {row.productWholesalePrice != null && (
-                                  <option value="wholesale">Wholesale</option>
-                                )}
-                                {row.productRetailPrice != null && (
-                                  <option value="retail">Retail</option>
-                                )}
-                              </select>
-                            ) : (
+                            {hasPriceChoice(row) ? (() => {
+                              const currentType = row.priceType ?? "wholesale";
+                              const options: { type: InvoicePriceType; amount: number }[] = [
+                                { type: "custom", amount: row.unitPrice || 0 },
+                              ];
+                              if (row.productCostPrice != null) {
+                                options.push({ type: "cost", amount: row.productCostPrice });
+                              }
+                              if (row.productWholesalePrice != null) {
+                                options.push({ type: "wholesale", amount: row.productWholesalePrice });
+                              }
+                              if (row.productRetailPrice != null) {
+                                options.push({ type: "retail", amount: row.productRetailPrice });
+                              }
+                              return (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      className="h-8 w-full min-w-[7.5rem] justify-between gap-2 px-2 font-normal"
+                                      aria-label="Price type: wholesale, retail, cost, or custom"
+                                    >
+                                      <span className="min-w-0 flex-1 truncate text-left text-xs text-foreground">
+                                        {PRICE_TYPE_LABELS[currentType]}
+                                      </span>
+                                      <span className="flex shrink-0 items-center gap-1">
+                                        <span className="text-[0.65rem] leading-tight text-muted-foreground tabular-nums sm:text-[0.7rem]">
+                                          {formatCurrency(row.unitPrice || 0)}
+                                        </span>
+                                        <ChevronDown className="h-3.5 w-3.5 opacity-50" />
+                                      </span>
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="start" className="min-w-[12rem]">
+                                    {options.map((opt) => {
+                                      const selected = currentType === opt.type;
+                                      return (
+                                        <DropdownMenuItem
+                                          key={opt.type}
+                                          onSelect={() => setLinePriceType(row.id, opt.type)}
+                                          className="flex cursor-pointer items-baseline justify-between gap-2 py-1.5 pl-1.5 pr-2"
+                                        >
+                                          <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                                            <span className="flex w-3.5 shrink-0 justify-center" aria-hidden>
+                                              {selected ? (
+                                                <Check className="h-3.5 w-3.5 opacity-80" />
+                                              ) : null}
+                                            </span>
+                                            <span
+                                              className={cn("truncate text-sm", selected && "font-medium")}
+                                            >
+                                              {PRICE_TYPE_LABELS[opt.type]}
+                                            </span>
+                                          </span>
+                                          <span className="shrink-0 pl-1.5 text-[0.65rem] leading-none text-muted-foreground tabular-nums sm:text-[0.7rem]">
+                                            {formatCurrency(opt.amount)}
+                                          </span>
+                                        </DropdownMenuItem>
+                                      );
+                                    })}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              );
+                            })() : (
                               <span className="text-muted-foreground text-xs">—</span>
                             )}
                           </td>
                           <td className="px-3 py-2 text-right tabular-nums text-sm text-foreground">
-                            {formatCurrency(row.unitPrice || 0)}
+                            {row.priceType === "custom" ? (
+                              <Input
+                                type="number"
+                                inputMode="decimal"
+                                step="0.01"
+                                min={0}
+                                value={row.unitPrice === 0 ? "" : row.unitPrice}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  const num = v === "" ? 0 : Math.max(0, Number(v) || 0);
+                                  updateLineItem(row.id, "unitPrice", num);
+                                }}
+                                onFocus={(e) => e.target.select()}
+                                placeholder="0"
+                                className="h-11 w-full min-w-[110px] rounded-md border border-input bg-background text-right focus-visible:ring-2 text-base tabular-nums sm:h-8 sm:min-w-0 sm:border-0 sm:bg-transparent sm:text-sm sm:focus-visible:ring-1"
+                              />
+                            ) : (
+                              formatCurrency(row.unitPrice || 0)
+                            )}
                           </td>
                           <td className="px-3 py-2 text-right font-medium tabular-nums text-foreground">
                             {(row.quantity || 0) * (row.unitPrice || 0)}
