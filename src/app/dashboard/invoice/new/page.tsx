@@ -52,7 +52,15 @@ export default function NewInvoicePage() {
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerCompany, setCustomerCompany] = useState("");
   const [issueDate, setIssueDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState(() => {
+    const issue = new Date().toISOString().slice(0, 10);
+    return getDefaultDueDate(issue);
+  });
+
+  function handleIssueDateChange(nextIssue: string) {
+    setIssueDate(nextIssue);
+    setDueDate((prev) => (prev === "" && nextIssue ? getDefaultDueDate(nextIssue) : prev));
+  }
   const [taxAmount, setTaxAmount] = useState<string>("0");
   const [paymentTerms, setPaymentTerms] = useState("Net 30");
   const [notes, setNotes] = useState("");
@@ -87,10 +95,6 @@ export default function NewInvoicePage() {
       router.replace("/dashboard/invoice");
     }
   }, [userProfile, canManageInvoice, router]);
-
-  useEffect(() => {
-    if (issueDate && !dueDate) setDueDate(getDefaultDueDate(issueDate));
-  }, [issueDate]);
 
   const subtotal = lineItems.reduce((s, r) => s + (r.quantity || 0) * (r.unitPrice || 0), 0);
   const tax = taxAmount !== "" ? Number(taxAmount) : 0;
@@ -312,7 +316,7 @@ export default function NewInvoicePage() {
                       id="issueDate"
                       type="date"
                       value={issueDate}
-                      onChange={(e) => setIssueDate(e.target.value)}
+                      onChange={(e) => handleIssueDateChange(e.target.value)}
                       required
                       className="mt-1 h-9 rounded-md min-w-0"
                     />
