@@ -11,6 +11,8 @@ import { ApiError } from "../types";
 import type { BackendResponse } from "../backend-types";
 import { unwrapBackendResponse } from "../backend-types";
 
+export const DEFAULT_INVOICE_TAX_RATE = 7.5;
+
 // --- Analysis & meta ---
 
 export interface InvoiceListAnalysis {
@@ -89,6 +91,7 @@ export interface Invoice {
   dueDate: string | null;
   status: string;
   subtotal: number;
+  taxRate?: number | null;
   taxAmount: number;
   totalAmount: number;
   amountPaid: number;
@@ -175,6 +178,7 @@ export interface CreateInvoicePayload {
   issueDate: string;
   dueDate?: string;
   status?: string;
+  taxRate?: number;
   taxAmount?: number;
   paymentTerms?: string;
   notes?: string;

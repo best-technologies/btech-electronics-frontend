@@ -62,7 +62,7 @@ export type {
   StocksSummary,
 } from "./distribution/dashboard-api";
 
-export { invoiceApi } from "./distribution/invoice-api";
+export { invoiceApi, DEFAULT_INVOICE_TAX_RATE } from "./distribution/invoice-api";
 export type {
   CreateInvoiceItemPayload,
   CreateInvoicePayload,

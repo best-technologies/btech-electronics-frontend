@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuthStore, selectHasManageInvoice, selectHasManageStock } from "@/stores/authStore";
 import {
   invoiceApi,
+  DEFAULT_INVOICE_TAX_RATE,
   type CreateInvoicePayload,
   type CreateInvoiceItemPayload,
   type StockSearchItem,
@@ -54,6 +55,14 @@ function getDefaultDueDate(issueDate: string): string {
   return d.toISOString().slice(0, 10);
 }
 
+function roundMoney(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+function computeTaxAmount(subtotal: number, taxRate: number): number {
+  return roundMoney((subtotal * taxRate) / 100);
+}
+
 export default function NewInvoicePage() {
   const router = useRouter();
   const accessToken = useAuthStore((s) => s.accessToken);
@@ -74,7 +83,7 @@ export default function NewInvoicePage() {
     setIssueDate(nextIssue);
     setDueDate((prev) => (prev === "" && nextIssue ? getDefaultDueDate(nextIssue) : prev));
   }
-  const [taxAmount, setTaxAmount] = useState<string>("0");
+  const [taxRate, setTaxRate] = useState<string>("7.5");
   const [paymentTerms, setPaymentTerms] = useState("Net 30");
   const [notes, setNotes] = useState("");
   const [companyAddress, setCompanyAddress] = useState(DEFAULT_COMPANY_ADDRESS);
@@ -86,6 +95,16 @@ export default function NewInvoicePage() {
   const [lineItems, setLineItems] = useState<LineItemRow[]>([
     { id: "1", description: "", quantity: 0, unit: "pieces", unitPrice: 0, totalAmount: 0 },
   ]);
+
+  function handleTaxRateChange(value: string) {
+    setTaxRate(value);
+  }
+
+  function handleTaxRateBlur() {
+    if (taxRate.trim() === "") {
+      setTaxRate(String(DEFAULT_INVOICE_TAX_RATE));
+    }
+  }
 
   const canManageStock = useAuthStore(selectHasManageStock);
 
@@ -109,9 +128,13 @@ export default function NewInvoicePage() {
     }
   }, [userProfile, canManageInvoice, router]);
 
-  const subtotal = lineItems.reduce((s, r) => s + (r.quantity || 0) * (r.unitPrice || 0), 0);
-  const tax = taxAmount !== "" ? Number(taxAmount) : 0;
-  const total = subtotal + tax;
+  const subtotal = roundMoney(
+    lineItems.reduce((s, r) => s + (r.quantity || 0) * (r.unitPrice || 0), 0)
+  );
+  const rate =
+    taxRate === "" ? 0 : Math.max(0, Math.min(100, Number(taxRate) || 0));
+  const tax = computeTaxAmount(subtotal, rate);
+  const total = roundMoney(subtotal + tax);
   const itemCount = lineItems.filter((r) => r.description.trim() && r.quantity > 0).length;
 
   const canSubmit =
@@ -266,7 +289,8 @@ export default function NewInvoicePage() {
       customerCompany: customerCompany.trim() || undefined,
       issueDate,
       dueDate: dueDate || undefined,
-      taxAmount: taxAmount !== "" ? Number(taxAmount) : undefined,
+      taxRate: rate,
+      taxAmount: tax,
       paymentTerms: paymentTerms.trim() || undefined,
       notes: notes.trim() || undefined,
       companyAddress: companyAddress.trim() || undefined,
@@ -375,19 +399,6 @@ export default function NewInvoicePage() {
                       value={paymentTerms}
                       onChange={(e) => setPaymentTerms(e.target.value)}
                       placeholder="Net 30"
-                      className="mt-1 h-9 rounded-md min-w-0"
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <Label htmlFor="taxAmount" className="text-xs">Tax</Label>
-                    <Input
-                      id="taxAmount"
-                      type="number"
-                      step="0.01"
-                      min={0}
-                      value={taxAmount}
-                      onChange={(e) => setTaxAmount(e.target.value)}
-                      onFocus={(e) => e.target.select()}
                       className="mt-1 h-9 rounded-md min-w-0"
                     />
                   </div>
@@ -543,7 +554,7 @@ export default function NewInvoicePage() {
                             )}
                           </td>
                           <td className="px-3 py-2 text-right font-medium tabular-nums text-foreground">
-                            {(row.quantity || 0) * (row.unitPrice || 0)}
+                            {formatCurrency((row.quantity || 0) * (row.unitPrice || 0))}
                           </td>
                           <td className="px-2 py-2">
                             <Button
@@ -560,6 +571,56 @@ export default function NewInvoicePage() {
                           </td>
                         </tr>
                       ))}
+                      <tr className="border-t border-border bg-muted/10">
+                        <td className="px-3 py-2 align-middle" colSpan={4}>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-sm font-medium text-foreground">Tax (VAT)</span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-xs text-muted-foreground"
+                              onClick={() => setTaxRate("0")}
+                            >
+                              No tax
+                            </Button>
+                            {rate === 0 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 text-xs text-muted-foreground"
+                                onClick={() => setTaxRate(String(DEFAULT_INVOICE_TAX_RATE))}
+                              >
+                                Apply {DEFAULT_INVOICE_TAX_RATE}%
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 text-right align-middle">
+                          <div className="flex items-center justify-end gap-1">
+                            <Input
+                              id="taxRate"
+                              type="number"
+                              inputMode="decimal"
+                              step="0.1"
+                              min={0}
+                              max={100}
+                              value={taxRate}
+                              onChange={(e) => handleTaxRateChange(e.target.value)}
+                              onBlur={handleTaxRateBlur}
+                              onFocus={(e) => e.target.select()}
+                              className="h-8 w-20 rounded-md border border-input bg-background text-right tabular-nums text-sm"
+                              aria-label="Tax rate percentage"
+                            />
+                            <span className="text-sm text-muted-foreground">%</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 text-right font-medium tabular-nums text-foreground align-middle">
+                          {formatCurrency(tax)}
+                        </td>
+                        <td className="px-2 py-2" />
+                      </tr>
                     </tbody>
                     <tfoot>
                       <tr>
@@ -658,12 +719,10 @@ export default function NewInvoicePage() {
                     <span className="text-muted-foreground">Subtotal</span>
                     <span className="tabular-nums font-medium">{formatCurrency(subtotal)}</span>
                   </div>
-                  {tax > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Tax</span>
-                      <span className="tabular-nums font-medium">{formatCurrency(tax)}</span>
-                    </div>
-                  )}
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Tax ({rate}%)</span>
+                    <span className="tabular-nums font-medium">{formatCurrency(tax)}</span>
+                  </div>
                   <div className="flex justify-between text-sm pt-2 border-t border-border">
                     <span className="font-medium text-foreground">Total</span>
                     <span className="tabular-nums font-bold text-lg">{formatCurrency(total)}</span>

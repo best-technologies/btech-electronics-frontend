@@ -621,10 +621,12 @@ export default function InvoiceDetailPage() {
                   <span>Subtotal</span>
                   <span className="tabular-nums">{formatCurrency(invoice.subtotal ?? 0)}</span>
                 </div>
-                {(invoice.taxAmount ?? 0) > 0 && (
+                {(invoice.taxRate != null || (invoice.taxAmount ?? 0) > 0) && (
                   <div className="flex justify-between text-muted-foreground">
-                    <span>Tax</span>
-                    <span className="tabular-nums">{formatCurrency(invoice.taxAmount!)}</span>
+                    <span>
+                      {invoice.taxRate != null ? `Tax (${invoice.taxRate}%)` : "Tax"}
+                    </span>
+                    <span className="tabular-nums">{formatCurrency(invoice.taxAmount ?? 0)}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-semibold text-foreground pt-2 border-t border-border">
